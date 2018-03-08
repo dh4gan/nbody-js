@@ -1,0 +1,27 @@
+body {
+
+}
+
+h1,h2,h3{
+    color: navy;
+    margin-left: 20px;
+    font-family: helvetica, sans-serif;
+}
+
+
+p {
+    color:gray;
+    margin-left:20px;
+    font-family: helvetica, sans-serif;
+}
+
+div
+{
+    color:black;
+    margin-left:40px;
+    font-family: helvetica, sans-serif;
+}
+
+button{
+    margin-left:10px;
+}

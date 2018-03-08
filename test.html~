@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+    <head>
+    <title> Rio 2.0 Questionnaire</title>
+     <h1> The Rio Scale 2.0: Online Questionnaire</h1>
+    </head>
+    
+    <link rel="stylesheet" type = "text/css" href="quiz.css">
+    
+    <body>
+    
+    <h2 id="quizname"> Questions to determine Q </h2>
+    <h3 id="quizsub"> </h3>
+
+    <p id = "ask"> Question should be here </p>
+    
+    <div id="answersbox"> </div>
+    <br>
+    
+    <div id="buttonarray">
+    <button id="submitbutton" onclick="getQuestionAnswer()"> Submit </button>
+    <button id="backbutton" onclick="goBack()">Back </button>
+    <button id="refreshbutton" onclick="window.location.reload()">Restart Quiz</button>
+    </div>
+    
+    <p id="confirm"> </p>
+    
+    <div id = "spaces">
+    <br>
+    <br>
+    </div>
+
+    <p id="explainbox"> </p>
+
+    <h2 id="resultheader" style="visibility:hidden"> Results </h2>
+    <div id="Qbox"> </div>
+    <br>
+    
+    <div id="Abox"> </div>
+    <div id="Bbox"></div>
+    <div id="Cbox"></div>
+    <br>
+    <div id="Jbox"> </div>
+    <div id="deltabox"> </div>
+    
+    <br>
+    <div id="Rbox"> </div>
+    
+    <h2> Answer Log </h2>
+        
+    <div id="logbox"></div>
+    
+    <button id = "printbutton" onclick=window.print() style="visibility:hidden">Print Results</button>
+    <button id= "refreshlower" onclick="window.location.reload()" style="visibility:hidden">Restart Quiz</button>
+    
+   
+    
+
+
+<!--Javascript stuff -->
+
+<script src='quiz.js'> </script>
+
+</body>
