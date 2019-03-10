@@ -623,3 +623,33 @@ Body.prototype.calcSnapCrackle = function calcSnapCrackle(G, bodyarray,
   } // End of loop
   // End of method
 };
+
+Body.prototype.calcTimestep = function calcTimestep(greekEta) {
+  /* Author: dh4gan
+    * Calculate the preferred timestep for the Body
+    * given its acceleration, jerk, snap and crackle
+    */
+
+  const tolerance = 1e-20;
+
+  const normJ = this.jerk.magVector();
+  const normA = this.acceleration.magVector();
+  const normC = this.magVector();
+  const normS = this.magVector();
+
+  // If numerator zero, give a warning
+
+  if (normA * normS + normJ * normJ < tolerance) {
+    console.log('warning in calcTimestep: numerator zero for '+this.name);
+    console.log(this.position.mag() + '  ' + this.velocity.magVector());
+    this.timestep = 0.0;
+  } else if (normC * normJ + normS * normS < tolerance) {
+    // If denominator zero, give a warning - set timestep very large
+    console.log('warning in calcTimestep: denominator zero for '+this.name);
+    this.timestep = 1.0e30;
+  } else {
+    // Otherwise calculate timestep as normal
+    this.timestep = Math.sqrt(greekEta * (normA * normS + normJ * normJ) /
+    (normC * normJ + normS * normS));
+  }
+};
