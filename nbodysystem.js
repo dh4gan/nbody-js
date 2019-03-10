@@ -101,7 +101,6 @@ function calcTimestep() {
 
 NBodySystem.prototype.drawSystem =
 function drawSystem(npoints, canvasID, pixscale) {
-
   pixscale = 100.0;
   for (ibody = 0; ibody < this.N; ibody++) {
     this.bodies[ibody].drawOrbit(this.G, this.totalmass,
@@ -123,9 +122,10 @@ function testSystem() {
 
   system.addBody(createBodyFromOrbit(0.001, 10.0, 'green',
       system.G, system.totalmass+0.001, 1.0, 0.1, 0.0, 0.0, 0.0, 0.0));
-  
-  system.addBody(createBodyFromOrbit(0.01, 10.0, 'blue', system.G, system.totalmass+0.01, 3.0, 0.4, 0.0, 0.0, 1.3, 0.0, 4.0));
-      system.drawSystem(100, 'myCanvas', pixscale);
+
+  system.addBody(createBodyFromOrbit(0.01, 10.0, 'blue', system.G,
+      system.totalmass+0.01, 3.0, 0.4, 0.0, 0.0, 1.3, 0.0, 4.0));
+  system.drawSystem(100, 'myCanvas', pixscale);
 };
 
 testSystem();

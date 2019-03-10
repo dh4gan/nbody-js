@@ -85,6 +85,11 @@ function Body(mass, size, colour, position, velocity) {
   this.position = position;
   this.velocity = velocity;
 
+  this.acceleration = new Vector();
+  this.jerk = new Vector();
+  this.snap = new Vector();
+  this.crackle = new Vector();
+
   this.a = 0.0; // semimajor axis
   this.e = 0.0; // eccentricity
   this.i = 0.0; // inclination
@@ -362,7 +367,7 @@ Body.prototype.draw2D = function draw2D(canvasID, pixscale) {
 
 
 // Draws an ellipse corresponding to a given orbit
-Body.prototype.drawOrbit = function drawOrbit(G, totalmass, 
+Body.prototype.drawOrbit = function drawOrbit(G, totalmass,
     npoints, canvasID, pixscale) {
   const dummyBody = this.clone();
   dummyBody.calcOrbitFromVector(G, totalmass);
@@ -401,32 +406,220 @@ Body.prototype.drawOrbit = function drawOrbit(G, totalmass,
   }
 };
 
-/**
- * simple test function to check the body stuff works
- */
-function testBody() {
-  const pos1 = new Vector(0.707106, 0.707106, 0.0);
-  const vel1 = new Vector(-0.707106, 0.707106, 0.0);
-  const body1 = new Body(0.001, 10.0, 'blue', pos1, vel1);
 
+Body.prototype.calcAccelJerk =
+function calcAccelJerk(G, bodyarray, softeningLength) {
+  /* Author: dh4gan
+     * Calculate the gravitational acceleration on a Body
+     * given an array of to bodies
+     * Method :
+     * Loop over each body in the system and calculate the vector r
+     * from the body in question, then work out the force vector
+     * and therefore the acceleration vector
+     *
+     * a_i = -G * M_i
+     *    ------------- * r^hat_i
+     *         |r_i|**2
+     *
+     * j_i = -G * M_i
+     *  ------------- * v^hat_i - 3 alpha_i a_i
+     *        |r_i|**2
+     *
+     * alpha_i = (r_i.v_i)/|r_i|**2
+     *
+     *
+     * r^hat is the unit vector in the direction of the vector connecting
+     * M1 is the mass of the body
+     * M2 is the mass of the other body
+     * |r| is the distance between the two bodies
+     *
+     *
+     * Argument :
+     *   bodyarray : a vector containing all the Body objects
+     *    in the system that the Body in question belongs to
+     *
+     */
+  let b;
+  const N = bodyarray.length();
 
-  const npoints = 100;
-  const totalmass = 1.0;
-  const G = 1.0;
+  let alpha;
+  let factor;
+  let rmag;
+  let r2;
+  let r3;
+  let r21;
 
-  const pixscale = 100.0;
+  relativeVelocity = new Vector();
+  relativePosition = new Vector();
 
-  const body2 = createBodyFromOrbit(0.001, 10.0, 'green',
-      G, totalmass, 1.0, 0.1, 0.0, 0.0, 0.0, 0.0);
+  accelterm = new Vector();
+  jerkterm = new Vector();
+  jerkterm1 = new Vector();
+  jerkterm2 = new Vector();
 
-  body1.calcOrbitFromVector(G, totalmass);
+  for (b = 0; b < N; b++) {
+    // Get relative position and velocity
 
-  body1.drawOrbit(G, totalmass, npoints, 'myCanvas', pixscale);
-  body1.draw2D('myCanvas', pixscale);
+    relativePosition = this.position.relativeVector(bodyarray[b].position);
+    relativeVelocity = this.velocity.relativeVector(bodyarray[b].velocity);
 
-  body2.drawOrbit(G, totalmass, npoints, 'myCanvas', pixscale);
-  body2.draw2D('myCanvas', pixscale);
-}
+    rmag = relativePosition.magVector();
 
+    // Since the body in question is inside the body array
+    // I need to make sure the body I am looping through
+    // isn't itself so skip the loop if distance effectively 0
 
-//testBody();
+    if (rmag < 1.0e-2 * softeningLength) {
+      continue;
+    }
+
+    // Add gravitational softening
+    r2 = rmag * rmag + softeningLength * softeningLength;
+    r21 = 1.0 / r2;
+    rmag = sqrt(r2);
+    r3 = rmag * rmag * rmag;
+
+    // Define this factor, as it's useful
+    factor = -G * bodyarray[b].mass / r3;
+
+    // Calculate acceleration term
+    accelterm = relativePosition.scale(factor);
+
+    // acceleration = acceleration - accelterm
+    acceleration = accelterm.relativeVector(acceleration);
+
+    // now jerk - calculate alpha term
+    alpha = relativeVelocity.dot(relativePosition);
+
+    alpha = alpha * r21;
+    jerkterm1 = relativeVelocity.scale(factor);
+    jerkterm2 = accelterm.scale(-3.0 * alpha);
+
+    // jerkterm = jerkterm2 - jerkterm1
+    jerkterm = jerkterm1.add(jerkterm2);
+
+    // jerk = jerk - jerkterm
+    jerk = jerkterm.relativeVector(jerk);
+  } // End of loop
+  // End of method
+};
+
+Body.prototype.calcSnapCrackle = function calcSnapCrackle(G, bodyarray,
+    softeningLength) {
+  /* Author: dh4gan 11/3/13
+     * Calculate the snap and crackle on a Body given an array of bodies
+     * WARNING: This method does not work unless calcAccelJerk is called first
+     * This method will calculate a lot of the same terms as calcAccelJerk, but
+     * this is the only way these calculations work on a Body by Body basis
+     */
+
+  let b;
+  const N = bodyarray.length();
+
+  let alpha;
+  let beta;
+  let gamma;
+  let factor;
+  let rmag;
+  let r2;
+  let r3;
+  let r21;
+  let vmag;
+  let v2;
+
+  zerovector = new Vector();
+  relativeVelocity = new Vector();
+  relativePosition = new Vector();
+  relativeAcceleration = new Vector();
+  relativeJerk = new Vector();
+
+  accelterm = new Vector();
+
+  jerkterm = new Vector();
+  jerkterm1 = new Vector();
+  jerkterm2 = new Vector();
+
+  snapterm = new Vector();
+  snapterm1 = new Vector();
+  snapterm2 = new Vector();
+  snapterm3 = new Vector();
+
+  crackleterm = new Vector();
+  crackleterm1 = new Vector();
+  crackleterm2 = new Vector();
+  crackleterm3 = new Vector();
+  crackleterm4 = new Vector();
+
+  for (b = 0; b < N; b++) {
+    // Get relative position, velocity, acceleration and jerk
+
+    relativePosition = this.position.relativeVector(bodyarray[b].position);
+    relativeVelocity = this.velocity.relativeVector(bodyarray[b].velocity);
+    relativeAcceleration = this.acceleration.relativeVector(
+        bodyarray[b].acceleration);
+    relativeJerk = this.jerk.relativeVector(bodyarray[b].jerk);
+
+    rmag = relativePosition.mag();
+    vmag = relativeVelocity.mag();
+
+    v2 = vmag * vmag;
+
+    // Since the body in question is inside the body array
+    // I need to make sure the body I am looping through
+    // isn't itself so skip the loop if distance ==0
+
+    if (rmag < 1.0e-2 * softeningLength) {
+      continue;
+    }
+
+    // Add gravitational softening
+    r2 = rmag * rmag + softeningLength * softeningLength;
+    r21 = 1.0 / r2;
+    rmag = sqrt(r2);
+    r3 = rmag * rmag * rmag;
+
+    // Define this factor, as it's useful
+    factor = G * bodyarray[b].mass / r3;
+
+    // Calculate acceleration term
+    accelterm = relativePosition.scale(factor);
+
+    // now jerk - calculate alpha term
+    alpha = relativeVelocity.dotProduct(relativePosition) * r21;
+
+    jerkterm1 = relativeVelocity.scale(factor);
+    jerkterm2 = accelterm.scale(3 * alpha);
+
+    // jerkterm = jerkterm2 - jerkterm1
+    jerkterm = jerkterm2.relativeVector(jerkterm1);
+
+    // calculate snap terms
+    beta = (v2 + relativePosition.dotProduct(relativeAcceleration))
+    * r21 + alpha * alpha;
+
+    snapterm1 = relativeAcceleration.scale(factor);
+    snapterm2 = jerkterm.scale(-6 * alpha);
+    snapterm3 = accelterm.scale(-3 * beta);
+
+    snapterm = snapterm1.add(snapterm2, snapterm3);
+
+    snap = snapterm.relativeVector(snap);
+
+    // Finally crackle terms
+
+    gamma = (3.0 * relativeVelocity.dotProduct(relativeAcceleration)
+    + relativePosition.dotProduct(rel_jerk)) * r21;
+    gamma = gamma + alpha * (3.0 * beta - 4.0 * alpha * alpha);
+
+    crackleterm1 = rel_jerk.scale(factor);
+    crackleterm2 = snapterm.scale(-9.0 * alpha);
+    crackleterm3 = jerkterm.scale(-9.0 * beta);
+    crackleterm4 = accelterm.scale(-3.0 * gamma);
+
+    crackleterm = crackleterm1.add(crackleterm2, crackleterm3,
+        crackleterm4);
+
+    crackle = crackleterm.relativeVector(crackle);
+  } // End of loop
+  // End of method
+};
