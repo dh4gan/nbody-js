@@ -53,7 +53,7 @@
  @param {double} y - y co-ordinate
  @param {double} z - z co-ordinate
  */
-function Vector(x, y, z) {
+function Vector(x=0.0, y=0.0, z=0.0) {
   this.x = x;
   this.y = y;
   this.z = z;
@@ -84,6 +84,11 @@ Vector.prototype.add = function(v) {
 // Subtract v from vector this
 Vector.prototype.subtract = function(v) {
   return new Vector(this.x-v.x, this.y-v.y, this.z-v.z);
+};
+
+// Subtract v from vector this
+Vector.prototype.relativeVector = function(v) {
+  return new Vector(-this.x+v.x, -this.y+v.y, -this.z+v.z);
 };
 
 
