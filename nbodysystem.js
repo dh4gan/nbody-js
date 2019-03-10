@@ -48,34 +48,39 @@
 
 /**
  * nBodySystem constructor
- * @param {array} bodies
  * @param {double} timestep
  * @param {double} G
  * @param {double} softeningLength
+ * @param {array} bodies
  *
  */
-function NBodySystem(bodies, timestep, G, softeningLength) {
-  this.bodies = bodies;
+function NBodySystem(timestep = 0.001, G = 1.0,
+    softeningLength = 1.0e-5, bodies = []) {
   this.timestep = timestep;
   this.G = G;
   this.softeningLength = softeningLength;
-
-  calcTotalMass();
+  this.bodies = bodies;
+  this.N = bodies.length;
 }
-
-NBodySystem.prototype.addBody = function addBody(body) {
-  bodies.push(body);
-  calcTotalMass();
-  calcCOM();
-};
-
 
 NBodySystem.prototype.calcTotalMass =
 function calcTotalMass() {
+  this.totalmass = 0.0;
+  for (i = 0; i< this.N; i++) {
+    this.totalmass += this.bodies[i].mass;
+  }
 };
 
 NBodySystem.prototype.calcCOM =
 function calcCOM() {
+};
+
+
+NBodySystem.prototype.addBody = function addBody(body) {
+  this.bodies.push(body);
+  this.N++;
+  this.calcTotalMass();
+  this.calcCOM();
 };
 
 NBodySystem.prototype.setupOrbits =
@@ -95,6 +100,32 @@ function calcTimestep() {
 };
 
 NBodySystem.prototype.drawSystem =
-function drawSystem() {
+function drawSystem(npoints, canvasID, pixscale) {
+
+  pixscale = 100.0;
+  for (ibody = 0; ibody < this.N; ibody++) {
+    this.bodies[ibody].drawOrbit(this.G, this.totalmass,
+        npoints, canvasID, pixscale);
+    this.bodies[ibody].draw2D(canvasID, pixscale);
+  }
 };
 
+/**
+ * Quick method to test NBodySystem
+ */
+function testSystem() {
+  const pixscale = 100.0;
+  const system = new NBodySystem();
+  system.calcTotalMass();
+
+  system.addBody(new Body(1.0, 10.0, 'yellow',
+      new Vector(0.0, 0.0, 0.0), new Vector(0.0, 0.0, 0.0)));
+
+  system.addBody(createBodyFromOrbit(0.001, 10.0, 'green',
+      system.G, system.totalmass+0.001, 1.0, 0.1, 0.0, 0.0, 0.0, 0.0));
+  
+  system.addBody(createBodyFromOrbit(0.01, 10.0, 'blue', system.G, system.totalmass+0.01, 3.0, 0.4, 0.0, 0.0, 1.3, 0.0, 4.0));
+      system.drawSystem(100, 'myCanvas', pixscale);
+};
+
+testSystem();

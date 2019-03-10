@@ -195,7 +195,11 @@ function calcOrbitFromVector(G, totalmass) {
   // If orbit circular, no inclination, then use the position vector itself
 
   if (this.e === 0.0 && this.i === 0.0) {
-    this.trueanom = Math.acos(this.position.x / magpos);
+    if (magpos > 0.0) {
+      this.trueanom = Math.acos(this.position.x / magpos);
+    } else {
+      this.trueanom = 0.0;
+    }
     if (this.velocity.x < 0.0) {
       this.trueanom = 2.0 * Math.pi - this.trueanom;
     }
@@ -310,7 +314,7 @@ Body.prototype.calcPeriod = function calcPeriod(G, totalmass) {
   return period;
 };
 
-createBodyFromOrbit = function(mass, size, colour, G,
+createBodyFromOrbit = function createBodyFromOrbit(mass, size, colour, G,
     totalmass, a, e, i, longascend, argper, trueanom) {
   const zeroVector1 = new Vector(0.0, 0.0, 0.0);
   const zeroVector2 = new Vector(0.0, 0.0, 0.0);
@@ -333,7 +337,7 @@ createBodyFromOrbit = function(mass, size, colour, G,
 };
 
 // Body drawing methods
-Body.prototype.draw2D = function(canvasID, pixscale) {
+Body.prototype.draw2D = function draw2D(canvasID, pixscale) {
   const canvas = document.getElementById(canvasID);
   const context = canvas.getContext('2d');
   const centerX = canvas.width / 2;
@@ -358,40 +362,43 @@ Body.prototype.draw2D = function(canvasID, pixscale) {
 
 
 // Draws an ellipse corresponding to a given orbit
-Body.prototype.drawOrbit = function(G, totalmass, npoints, canvasID, pixscale) {
+Body.prototype.drawOrbit = function drawOrbit(G, totalmass, 
+    npoints, canvasID, pixscale) {
   const dummyBody = this.clone();
   dummyBody.calcOrbitFromVector(G, totalmass);
 
-  const dphi = 2.0 * Math.PI / npoints;
+  if (dummyBody.a >0.0) {
+    const dphi = 2.0 * Math.PI / npoints;
 
-  const canvas = document.getElementById(canvasID);
-  const context = canvas.getContext('2d');
-  const centerX = canvas.width / 2;
-  const centerY = canvas.height / 2;
-  let offSetX = centerX + dummyBody.position.x;
-  let offSetY = centerY + dummyBody.position.y;
+    const canvas = document.getElementById(canvasID);
+    const context = canvas.getContext('2d');
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    let offSetX = centerX + dummyBody.position.x;
+    let offSetY = centerY + dummyBody.position.y;
 
-  context.moveTo(offSetX, offSetY);
-  context.beginPath();
-  context.strokeStyle = this.colour;
-  context.linewidth = 0.5;
-  context.setLineDash([2, 3]);
-
-  for (i = 0; i < npoints; i++) {
-    dummyBody.trueanom += dphi;
-    if (dummyBody.trueanom > 2.0 * Math.Pi) {
-      dummyBody.trueanom -= 2.0 * Math.Pi;
-    }
-
-    dummyBody.calcVectorFromOrbit(G, totalmass);
-
-    offSetX = centerX + pixscale * (dummyBody.position.x);
-    offSetY = centerY + pixscale * (dummyBody.position.y);
-    context.lineTo(offSetX, offSetY);
-    context.stroke();
     context.moveTo(offSetX, offSetY);
+    context.beginPath();
+    context.strokeStyle = this.colour;
+    context.linewidth = 0.5;
+    context.setLineDash([2, 3]);
+
+    for (i = 0; i < npoints; i++) {
+      dummyBody.trueanom += dphi;
+      if (dummyBody.trueanom > 2.0 * Math.Pi) {
+        dummyBody.trueanom -= 2.0 * Math.Pi;
+      }
+
+      dummyBody.calcVectorFromOrbit(G, totalmass);
+
+      offSetX = centerX + pixscale * (dummyBody.position.x);
+      offSetY = centerY + pixscale * (dummyBody.position.y);
+      context.lineTo(offSetX, offSetY);
+      context.stroke();
+      context.moveTo(offSetX, offSetY);
+    }
+    context.globalAlpha = 1.0;
   }
-  context.globalAlpha = 1.0;
 };
 
 /**
@@ -422,4 +429,4 @@ function testBody() {
 }
 
 
-testBody();
+//testBody();
