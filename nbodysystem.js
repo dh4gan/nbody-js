@@ -60,21 +60,65 @@ function NBodySystem(timestep = 0.001, G = 1.0,
   this.G = G;
   this.softeningLength = softeningLength;
   this.bodies = bodies;
-  this.N = bodies.length;
+    this.N = bodies.length;
+
+    this.angmom = new Vector();
+    this.positionCOM = new Vector();
+    this.velocityCOM = new Vector();
+    this.totalEnergy = 0.0;
+    this.totalMass = 0.0;
 }
 
 NBodySystem.prototype.calcTotalMass =
 function calcTotalMass() {
-  this.totalmass = 0.0;
-  for (i = 0; i< this.N; i++) {
-    this.totalmass += this.bodies[i].mass;
+  this.totalMass = 0.0;
+  for (let i = 0; i< this.N; i++) {
+    this.totalMass += this.bodies[i].mass;
   }
 };
 
 NBodySystem.prototype.calcCOM =
-function calcCOM() {
-};
+    function calcCOM() {
 
+	
+	this.positionCOM.setZero();
+	this.velocityCOM.setZero();
+
+	if(this.totalmass > 0.0) {
+	
+	    for(let ibody=0; ibody<this.N; ibody++) {
+		this.positionCOM = this.positionCOM.add(this.bodies[ibody].position.scale(this.bodies[ibody].mass));
+		this.velocityCOM = this.velocityCOM.add(this.bodies[ibody].velocity.scale(this.bodies[ibody].mass));
+		
+	    }
+
+	    this.positionCOM = this.positionCOM.scale(1.0/this.totalMass)
+	    this.velocityCOM = this.velocityCOM.scale(1.0/this.totalMass);
+	}
+    };
+
+NBodySystem.prototype.calcTotalEnergy =
+    function calcTotalEnergy() {
+
+	let kineticEnergy = 0.0;
+	let potentialEnergy = 0.0;
+	
+	for (let ibody=0; ibody< this.N; ibody++) {
+	    let speed = this.velocity.getMag();
+	    kineticEnergy += 0.5*bodies[ibody].mass*speed*speed;
+
+	    for (let jbody=0; jbody< this.N; jbody++) {
+		if(ibody === jbody){
+		    continue;
+		}
+		separation = this.bodies[ibody].position.subtract(this.bodies[jbody].position).getMag();
+		potentialEnergy += separation >0.0 ? this.G*this.bodies[ibody].mass*this.bodies[jbody].mass/separation : 0.0;
+		
+	    }
+	}
+
+	this.totalEnergy = kineticEnergy - potentialEnergy;
+};
 
 NBodySystem.prototype.addBody = function addBody(body) {
   this.bodies.push(body);
@@ -87,22 +131,149 @@ NBodySystem.prototype.setupOrbits =
 function setupOrbits() {
 };
 
-NBodySystem.prototype.calcTotalEnergy =
-function calcTotalEnergy() {
-};
+
 
 NBodySystem.prototype.calcTotalAngularMomentum =
-function calcTotalAngularMomentum() {
+    function calcTotalAngularMomentum() {
+
+	this.angmom.setZero();
+	for(let ibody=0; ibody < this.N; ibody++) {
+	    let angmomBody = bodies[ibody].calcOrbitalAngularMomentum();
+	    this.angmom.add.(angmomBody);
+	}
 };
 
 NBodySystem.prototype.calcTimestep =
-function calcTimestep() {
+    function calcTimestep(dtmax = 1.0e30) {
+
+	dtmin = 1.0e30;
+	for (let ibody=0; ibody < this.N; ibody++) {
+	    dt = bodies[ibody].calcTimestep();
+	    if(dt < dtmin) {
+		dtmin = dt;
+	    }
+	}
+	if(dtmin > dtmax) dtmin = dtmax;
+	this.timestep = dtmin;
 };
+
+NBodySystem.prototype.calcForces =
+    function calcForces(bodyList) {
+
+	let NBodies = bodyList.length;
+
+	for (let i=0; i< NBodies; i++) {
+	    
+	    bodyList[i].acceleration.setZero();
+	    bodyList[i].jerk.setZero();
+	    bodyList[i].snap.setZero();
+	    bodyList[i].crackle.setZero();
+	    
+	    bodyList[i].calcAccelJerk(this.G, bodyList, this.softeningLength);
+	    bodyList[i].calcSnapCrackle(this.G, bodyList, this.softeningLength);
+	}
+    }
+
+
+NBodySystem.prototype.evolveSystem =
+    function evolveSystem(tbegin, tend) {
+	/* Author: dh4gan
+	 * This method updates the positions of the bodies via 
+	 * a 4th order Hermite integration (via a predictor-corrector algorithm)
+	 */
+
+
+	let dtmax = 0.5 * (tend-tbegin);
+	/* i.  Calculate initial accelerations, jerks, snaps and crackles */
+	this.calcForces(this.bodies);
+
+	/* ii. Calculate initial global timestep */
+	this.calcTimestep();
+	this.calcTotalEnergy();
+	this.calcTotalAngularMomentum();
+
+	/* iii. Clone the current body array */
+
+	let predicted = {};
+
+	for (let i=0; i<this.N; i++) {
+	    predicted.push_back(this.bodies[i].clone());
+	}
+
+	let time = tbegin;
+
+	while (time < tend)
+	{
+
+	    let t2 = this.timestep * this.timestep;
+	    let t3 = this.timestep * t2;
+	    
+	/* Calculate predicted positions and velocities */
+	for (let i = 0; i < this.N; i++)
+	    {
+
+	    // Pull the body object's data //
+	    let pos = this.bodies[i].position;
+	    let vel = this.bodies[i].velocity;
+	    let acc = this.bodies[i].acceleration;
+	    let jerk = this.bodies[i].jerk;
+
+
+	    // 1. Calculate predicted position and velocity //
+	    predicted[i].position = pos.add(vel.scale(this.timestep), acc.scale(
+		    0.5 * t2), jerk.scale(t3 / 6.0));
+
+	    predicted[i].velocity = vel.addVector(acc.scaleVector(timeStep), jerk.scaleVector(
+		    0.5 * t2));
+
+	    }
+	
+
+	    /* 2. Use predicted positions and velocities to calculate
+	     * predicted accelerations, jerks, snaps and crackles */
+
+	    this.calcForces(predicted);
+
+
+	    for (let i = 0; i < this.N; i++)
+	    {
+
+		let pos_p = predicted[i].position;
+		let vel_p = predicted[i].velocity;
+		let acc_p = predicted[i].acceleration;
+		let jerk_p = predicted[i].jerk;
+
+		let pos = this.bodies[i].position;
+		let vel = this.bodies[i].velocity();
+		let acc = this.bodies[i].acceleration();
+		let jerk = this.bodies[i].jerk();
+
+		accterm = acc_p.add(acc).scale(0.5 * timeStep);
+
+		jerkterm = jerk_p.relativeVector(jerk).scale(timeStep
+							     * timeStep / 12.0);
+
+		this.bodies[i].velocity = vel.addVector(accterm, jerkterm);
+
+		let accterm = acc_p.relativeVector(acc).scaleVector(t2 / 12.0);
+		let velterm = vel_c.add(vel).scale(0.5 * timeStep);
+		this.bodies[i].position = pos.add(velterm, accterm);
+
+	    }
+	
+
+	    this.calcForces(this.bodies);
+	    this.time = this.time + this.timestep;
+	    this.calcTimestep(dtmax);
+	    this.calcTotalEnergy();
+	    this.calcTotalAngularMomentum();
+	}
+    };
 
 NBodySystem.prototype.drawSystem =
 function drawSystem(npoints, canvasID, pixscale) {
   pixscale = 100.0;
-  for (ibody = 0; ibody < this.N; ibody++) {
+  for (let ibody = 0; ibody < this.N; ibody++) {
     this.bodies[ibody].drawOrbit(this.G, this.totalmass,
         npoints, canvasID, pixscale);
     this.bodies[ibody].draw2D(canvasID, pixscale);

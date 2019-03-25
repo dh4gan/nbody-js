@@ -76,9 +76,19 @@ Vector.prototype.getMag = function() {
 };
 
 
-// Add vector this + v
-Vector.prototype.add = function(v) {
-  return new Vector(this.x+v.x, this.y+v.y, this.z+v.z);
+// Add vector this + u
+Vector.prototype.add = function(u) {
+  return new Vector(this.x+u.x, this.y+u.y, this.z+u.z);
+};
+
+// Add vector this + u + v
+Vector.prototype.add = function(u,v) {
+  return new Vector(this.x + u.x + v.x, this.y + u.y + v.y, this.z + u.z + v.z);
+};
+
+// Add vector this + u + v + q
+Vector.prototype.add = function(u,v,q) {
+  return new Vector(this.x + u.x + v.x + q.x, this.y + u.y + v.y + q.y, this.z + u.z + v.z + w.z);
 };
 
 // Subtract v from vector this

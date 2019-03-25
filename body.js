@@ -117,6 +117,7 @@ Body.prototype.print = function print() {
   console.log('Body: '+this.mass);
 };
 
+
 // Calculate orbital angular momentum of body
 Body.prototype.calcOrbitalAngularMomentum =
 function calcOrbitalAngularMomentum() {
@@ -486,7 +487,7 @@ function calcAccelJerk(G, bodyarray, softeningLength) {
     accelterm = relativePosition.scale(factor);
 
     // acceleration = acceleration - accelterm
-    acceleration = accelterm.relativeVector(acceleration);
+    this.acceleration = accelterm.relativeVector(acceleration);
 
     // now jerk - calculate alpha term
     alpha = relativeVelocity.dot(relativePosition);
@@ -499,7 +500,7 @@ function calcAccelJerk(G, bodyarray, softeningLength) {
     jerkterm = jerkterm1.add(jerkterm2);
 
     // jerk = jerk - jerkterm
-    jerk = jerkterm.relativeVector(jerk);
+    this.jerk = jerkterm.relativeVector(jerk);
   } // End of loop
   // End of method
 };
@@ -603,7 +604,7 @@ Body.prototype.calcSnapCrackle = function calcSnapCrackle(G, bodyarray,
 
     snapterm = snapterm1.add(snapterm2, snapterm3);
 
-    snap = snapterm.relativeVector(snap);
+    this.snap = snapterm.relativeVector(snap);
 
     // Finally crackle terms
 
@@ -619,7 +620,7 @@ Body.prototype.calcSnapCrackle = function calcSnapCrackle(G, bodyarray,
     crackleterm = crackleterm1.add(crackleterm2, crackleterm3,
         crackleterm4);
 
-    crackle = crackleterm.relativeVector(crackle);
+    this.crackle = crackleterm.relativeVector(crackle);
   } // End of loop
   // End of method
 };
