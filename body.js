@@ -140,7 +140,6 @@ Body.prototype.calcEccentricity = function calcEccentricity(G, totalmass) {
     this.eccvec = this.position.scale(magvel *
       magvel).subtract(this.velocity.scale(vdotr / gravparam));
 
-    console.log(vdotr, magvel);
     this.eccvec = this.eccvec.subtract(this.position.scale(1.0 / magpos));
   }
 
@@ -260,8 +259,8 @@ function calcOrbitFromVector(G, totalmass) {
 
 Body.prototype.calcVectorFromOrbit =
 function calcVectorFromOrbit(G, totalmass) {
-  console.log('Orbit', this.a, this.e, this.i,
-      this.longascend, this.argper, this.trueanom);
+  /*console.log('Orbit', this.a, this.e, this.i,
+      this.longascend, this.argper, this.trueanom);*/
   /* 1. calculate distance from CoM using semimajor axis,
 eccentricity and true anomaly */
 
@@ -441,7 +440,7 @@ function calcAccelJerk(G, bodyarray, softeningLength) {
      *
      */
   let b;
-  const N = bodyarray.length();
+  const N = bodyarray.length;
 
   let alpha;
   let factor;
@@ -464,7 +463,7 @@ function calcAccelJerk(G, bodyarray, softeningLength) {
     relativePosition = this.position.relativeVector(bodyarray[b].position);
     relativeVelocity = this.velocity.relativeVector(bodyarray[b].velocity);
 
-    rmag = relativePosition.magVector();
+    rmag = relativePosition.getMag();
 
     // Since the body in question is inside the body array
     // I need to make sure the body I am looping through
@@ -477,7 +476,7 @@ function calcAccelJerk(G, bodyarray, softeningLength) {
     // Add gravitational softening
     r2 = rmag * rmag + softeningLength * softeningLength;
     r21 = 1.0 / r2;
-    rmag = sqrt(r2);
+    rmag = Math.sqrt(r2);
     r3 = rmag * rmag * rmag;
 
     // Define this factor, as it's useful
@@ -487,7 +486,7 @@ function calcAccelJerk(G, bodyarray, softeningLength) {
     accelterm = relativePosition.scale(factor);
 
     // acceleration = acceleration - accelterm
-    this.acceleration = accelterm.relativeVector(acceleration);
+    this.acceleration = accelterm.relativeVector(this.acceleration);
 
     // now jerk - calculate alpha term
     alpha = relativeVelocity.dot(relativePosition);
@@ -497,10 +496,10 @@ function calcAccelJerk(G, bodyarray, softeningLength) {
     jerkterm2 = accelterm.scale(-3.0 * alpha);
 
     // jerkterm = jerkterm2 - jerkterm1
-    jerkterm = jerkterm1.add(jerkterm2);
+    jerkterm = jerkterm1.add1(jerkterm2);
 
     // jerk = jerk - jerkterm
-    this.jerk = jerkterm.relativeVector(jerk);
+    this.jerk = jerkterm.relativeVector(this.jerk);
   } // End of loop
   // End of method
 };
@@ -515,7 +514,7 @@ Body.prototype.calcSnapCrackle = function calcSnapCrackle(G, bodyarray,
      */
 
   let b;
-  const N = bodyarray.length();
+  const N = bodyarray.length;
 
   let alpha;
   let beta;
@@ -560,8 +559,8 @@ Body.prototype.calcSnapCrackle = function calcSnapCrackle(G, bodyarray,
         bodyarray[b].acceleration);
     relativeJerk = this.jerk.relativeVector(bodyarray[b].jerk);
 
-    rmag = relativePosition.mag();
-    vmag = relativeVelocity.mag();
+    rmag = relativePosition.getMag();
+    vmag = relativeVelocity.getMag();
 
     v2 = vmag * vmag;
 
@@ -576,7 +575,7 @@ Body.prototype.calcSnapCrackle = function calcSnapCrackle(G, bodyarray,
     // Add gravitational softening
     r2 = rmag * rmag + softeningLength * softeningLength;
     r21 = 1.0 / r2;
-    rmag = sqrt(r2);
+    rmag = Math.sqrt(r2);
     r3 = rmag * rmag * rmag;
 
     // Define this factor, as it's useful
@@ -586,7 +585,7 @@ Body.prototype.calcSnapCrackle = function calcSnapCrackle(G, bodyarray,
     accelterm = relativePosition.scale(factor);
 
     // now jerk - calculate alpha term
-    alpha = relativeVelocity.dotProduct(relativePosition) * r21;
+    alpha = relativeVelocity.dot(relativePosition) * r21;
 
     jerkterm1 = relativeVelocity.scale(factor);
     jerkterm2 = accelterm.scale(3 * alpha);
@@ -595,32 +594,32 @@ Body.prototype.calcSnapCrackle = function calcSnapCrackle(G, bodyarray,
     jerkterm = jerkterm2.relativeVector(jerkterm1);
 
     // calculate snap terms
-    beta = (v2 + relativePosition.dotProduct(relativeAcceleration))
+    beta = (v2 + relativePosition.dot(relativeAcceleration))
     * r21 + alpha * alpha;
 
     snapterm1 = relativeAcceleration.scale(factor);
     snapterm2 = jerkterm.scale(-6 * alpha);
     snapterm3 = accelterm.scale(-3 * beta);
 
-    snapterm = snapterm1.add(snapterm2, snapterm3);
+    snapterm = snapterm1.add2(snapterm2, snapterm3);
 
-    this.snap = snapterm.relativeVector(snap);
+    this.snap = snapterm.relativeVector(this.snap);
 
     // Finally crackle terms
 
-    gamma = (3.0 * relativeVelocity.dotProduct(relativeAcceleration)
-    + relativePosition.dotProduct(rel_jerk)) * r21;
+    gamma = (3.0 * relativeVelocity.dot(relativeAcceleration)
+    + relativePosition.dot(relativeJerk)) * r21;
     gamma = gamma + alpha * (3.0 * beta - 4.0 * alpha * alpha);
 
-    crackleterm1 = rel_jerk.scale(factor);
+    crackleterm1 = relativeJerk.scale(factor);
     crackleterm2 = snapterm.scale(-9.0 * alpha);
     crackleterm3 = jerkterm.scale(-9.0 * beta);
     crackleterm4 = accelterm.scale(-3.0 * gamma);
 
-    crackleterm = crackleterm1.add(crackleterm2, crackleterm3,
+    crackleterm = crackleterm1.add3(crackleterm2, crackleterm3,
         crackleterm4);
 
-    this.crackle = crackleterm.relativeVector(crackle);
+    this.crackle = crackleterm.relativeVector(this.crackle);
   } // End of loop
   // End of method
 };
@@ -633,16 +632,16 @@ Body.prototype.calcTimestep = function calcTimestep(greekEta) {
 
   const tolerance = 1e-20;
 
-  const normJ = this.jerk.magVector();
-  const normA = this.acceleration.magVector();
-  const normC = this.magVector();
-  const normS = this.magVector();
+  const normJ = this.jerk.getMag();
+  const normA = this.acceleration.getMag();
+  const normC = this.crackle.getMag();
+  const normS = this.snap.getMag();
 
   // If numerator zero, give a warning
 
   if (normA * normS + normJ * normJ < tolerance) {
     console.log('warning in calcTimestep: numerator zero for '+this.name);
-    console.log(this.position.mag() + '  ' + this.velocity.magVector());
+    console.log(this.position.getMag() + '  ' + this.velocity.getMag());
     this.timestep = 0.0;
   } else if (normC * normJ + normS * normS < tolerance) {
     // If denominator zero, give a warning - set timestep very large

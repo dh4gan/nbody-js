@@ -60,13 +60,18 @@ function NBodySystem(timestep = 0.001, G = 1.0,
   this.G = G;
   this.softeningLength = softeningLength;
   this.bodies = bodies;
-    this.N = bodies.length;
+  this.N = bodies.length;
 
     this.angmom = new Vector();
     this.positionCOM = new Vector();
     this.velocityCOM = new Vector();
     this.totalEnergy = 0.0;
     this.totalMass = 0.0;
+
+    this.nOrbitPoints = 100 // Number of points for drawing orbits
+    this.canvasID = "myCanvas"
+    this.pixscale = 100.0;
+    this.timestepTolerance = 0.001;
 }
 
 NBodySystem.prototype.calcTotalMass =
@@ -104,8 +109,8 @@ NBodySystem.prototype.calcTotalEnergy =
 	let potentialEnergy = 0.0;
 	
 	for (let ibody=0; ibody< this.N; ibody++) {
-	    let speed = this.velocity.getMag();
-	    kineticEnergy += 0.5*bodies[ibody].mass*speed*speed;
+	    let speed = this.bodies[ibody].velocity.getMag();
+	    kineticEnergy += 0.5*this.bodies[ibody].mass*speed*speed;
 
 	    for (let jbody=0; jbody< this.N; jbody++) {
 		if(ibody === jbody){
@@ -138,8 +143,8 @@ NBodySystem.prototype.calcTotalAngularMomentum =
 
 	this.angmom.setZero();
 	for(let ibody=0; ibody < this.N; ibody++) {
-	    let angmomBody = bodies[ibody].calcOrbitalAngularMomentum();
-	    this.angmom.add.(angmomBody);
+	    this.bodies[ibody].calcOrbitalAngularMomentum();
+	    this.angmom.add1(this.bodies[ibody].angmom);
 	}
 };
 
@@ -148,9 +153,9 @@ NBodySystem.prototype.calcTimestep =
 
 	dtmin = 1.0e30;
 	for (let ibody=0; ibody < this.N; ibody++) {
-	    dt = bodies[ibody].calcTimestep();
-	    if(dt < dtmin) {
-		dtmin = dt;
+	    this.bodies[ibody].calcTimestep(this.timestepTolerance);
+	    if(this.bodies[ibody].timestep < dtmin) {
+		dtmin = this.bodies[ibody].timestep;
 	    }
 	}
 	if(dtmin > dtmax) dtmin = dtmax;
@@ -194,10 +199,10 @@ NBodySystem.prototype.evolveSystem =
 
 	/* iii. Clone the current body array */
 
-	let predicted = {};
+	let predicted = [];
 
 	for (let i=0; i<this.N; i++) {
-	    predicted.push_back(this.bodies[i].clone());
+	    predicted.push(this.bodies[i].clone());
 	}
 
 	let time = tbegin;
@@ -212,6 +217,7 @@ NBodySystem.prototype.evolveSystem =
 	for (let i = 0; i < this.N; i++)
 	    {
 
+            this.bodies[i].position.print();
 	    // Pull the body object's data //
 	    let pos = this.bodies[i].position;
 	    let vel = this.bodies[i].velocity;
@@ -220,10 +226,10 @@ NBodySystem.prototype.evolveSystem =
 
 
 	    // 1. Calculate predicted position and velocity //
-	    predicted[i].position = pos.add(vel.scale(this.timestep), acc.scale(
+	    predicted[i].position = pos.add3(vel.scale(this.timestep), acc.scale(
 		    0.5 * t2), jerk.scale(t3 / 6.0));
 
-	    predicted[i].velocity = vel.addVector(acc.scaleVector(timeStep), jerk.scaleVector(
+	    predicted[i].velocity = vel.add2(acc.scale(this.timestep), jerk.scale(
 		    0.5 * t2));
 
 	    }
@@ -244,20 +250,20 @@ NBodySystem.prototype.evolveSystem =
 		let jerk_p = predicted[i].jerk;
 
 		let pos = this.bodies[i].position;
-		let vel = this.bodies[i].velocity();
-		let acc = this.bodies[i].acceleration();
-		let jerk = this.bodies[i].jerk();
+		let vel = this.bodies[i].velocity;
+		let acc = this.bodies[i].acceleration;
+		let jerk = this.bodies[i].jerk;
 
-		accterm = acc_p.add(acc).scale(0.5 * timeStep);
+		let accterm = acc_p.add1(acc).scale(0.5 * this.timestep);
 
-		jerkterm = jerk_p.relativeVector(jerk).scale(timeStep
-							     * timeStep / 12.0);
+		let jerkterm = jerk_p.relativeVector(jerk).scale(this.timestep
+							     * this.timestep / 12.0);
 
-		this.bodies[i].velocity = vel.addVector(accterm, jerkterm);
+		this.bodies[i].velocity = vel.add2(accterm, jerkterm);
 
-		let accterm = acc_p.relativeVector(acc).scaleVector(t2 / 12.0);
-		let velterm = vel_c.add(vel).scale(0.5 * timeStep);
-		this.bodies[i].position = pos.add(velterm, accterm);
+		accterm = acc_p.relativeVector(acc).scale(t2 / 12.0);
+		let velterm = this.bodies[i].velocity.add1(vel).scale(0.5 * this.timestep);
+		this.bodies[i].position = pos.add2(velterm, accterm);
 
 	    }
 	
@@ -267,16 +273,18 @@ NBodySystem.prototype.evolveSystem =
 	    this.calcTimestep(dtmax);
 	    this.calcTotalEnergy();
 	    this.calcTotalAngularMomentum();
+
+	    this.drawSystem();
 	}
     };
 
 NBodySystem.prototype.drawSystem =
-function drawSystem(npoints, canvasID, pixscale) {
-  pixscale = 100.0;
+function drawSystem() {
+  
   for (let ibody = 0; ibody < this.N; ibody++) {
-    this.bodies[ibody].drawOrbit(this.G, this.totalmass,
-        npoints, canvasID, pixscale);
-    this.bodies[ibody].draw2D(canvasID, pixscale);
+    this.bodies[ibody].drawOrbit(this.G, this.totalMass,
+        this.nOrbitPoints, this.canvasID, this.pixscale);
+    this.bodies[ibody].draw2D(this.canvasID, this.pixscale);
   }
 };
 
@@ -292,11 +300,22 @@ function testSystem() {
       new Vector(0.0, 0.0, 0.0), new Vector(0.0, 0.0, 0.0)));
 
   system.addBody(createBodyFromOrbit(0.001, 10.0, 'green',
-      system.G, system.totalmass+0.001, 1.0, 0.1, 0.0, 0.0, 0.0, 0.0));
+      system.G, system.totalMass+0.001, 1.0, 0.1, 0.0, 0.0, 0.0, 0.0));
 
   system.addBody(createBodyFromOrbit(0.01, 10.0, 'blue', system.G,
-      system.totalmass+0.01, 3.0, 0.4, 0.0, 0.0, 1.3, 0.0, 4.0));
-  system.drawSystem(100, 'myCanvas', pixscale);
+      system.totalMass+0.01, 3.0, 0.4, 0.0, 0.0, 1.3, 0.0, 4.0));
+    
+    let tbegin = 0.0;
+    let dt = 1.0;
+    let tend = tbegin + dt;
+    for (let i=0; i<5; i++)
+    {
+    system.drawSystem();
+    system.evolveSystem(tbegin, tend);
+        tbegin = tend;
+        tend = tbegin+dt;
+        console.log(tbegin, tend);
+    }
 };
 
 testSystem();

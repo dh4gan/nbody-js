@@ -71,61 +71,61 @@ Vector.prototype.print = function print() {
 };
 
 // Compute vector magnitude
-Vector.prototype.getMag = function() {
+Vector.prototype.getMag = function getMag() {
   return Math.sqrt(this.x*this.x + this.y*this.y + this.z*this.z);
 };
 
 
 // Add vector this + u
-Vector.prototype.add = function(u) {
+Vector.prototype.add1 = function add1(u) {
   return new Vector(this.x+u.x, this.y+u.y, this.z+u.z);
 };
 
 // Add vector this + u + v
-Vector.prototype.add = function(u,v) {
+Vector.prototype.add2 = function add2(u,v) {
   return new Vector(this.x + u.x + v.x, this.y + u.y + v.y, this.z + u.z + v.z);
 };
 
 // Add vector this + u + v + q
-Vector.prototype.add = function(u,v,q) {
-  return new Vector(this.x + u.x + v.x + q.x, this.y + u.y + v.y + q.y, this.z + u.z + v.z + w.z);
+Vector.prototype.add3 = function add3(u,v,q) {
+  return new Vector(this.x + u.x + v.x + q.x, this.y + u.y + v.y + q.y, this.z + u.z + v.z + q.z);
 };
 
 // Subtract v from vector this
-Vector.prototype.subtract = function(v) {
+Vector.prototype.subtract = function subtract(v) {
   return new Vector(this.x-v.x, this.y-v.y, this.z-v.z);
 };
 
 // Subtract v from vector this
-Vector.prototype.relativeVector = function(v) {
+Vector.prototype.relativeVector = function relativeVector(v) {
   return new Vector(-this.x+v.x, -this.y+v.y, -this.z+v.z);
 };
 
 
 // Multiply vector by scalar
-Vector.prototype.scale = function(fac) {
+Vector.prototype.scale = function scale(fac) {
   return new Vector(this.x*fac, this.y*fac, this.z*fac);
 };
 
 // Return the unit vector
-Vector.prototype.unit = function() {
+Vector.prototype.unit = function unit() {
   return this.scale(1.0/this.mag);
 };
 
 // Sets vector to zero
-Vector.prototype.setZero = function() {
+Vector.prototype.setZero = function setZero() {
   this.x = 0.0;
   this.y = 0.0;
   this.z = 0.0;
 };
 
 // Compute the dot product with vector v
-Vector.prototype.dot = function(v) {
+Vector.prototype.dot = function dot(v) {
   return this.x*v.x+ this.y*v.y + this.z*v.z;
 };
 
 // Compute the cross product with vector v
-Vector.prototype.cross = function(v) {
+Vector.prototype.cross = function cross(v) {
   const xcross = this.y*v.z - this.z*v.y;
   const ycross = -this.x*v.z + this.z*v.x;
   const zcross = this.x*v.y - this.y*v.x;
@@ -134,7 +134,7 @@ Vector.prototype.cross = function(v) {
 };
 
 // Rotate vector in x axis
-Vector.prototype.rotateX = function(angle) {
+Vector.prototype.rotateX = function rotateX(angle) {
   const oldVector = new Vector(this.x, this.y, this.z);
   const sinang = Math.sin(angle);
   const cosang = Math.cos(angle);
@@ -144,7 +144,7 @@ Vector.prototype.rotateX = function(angle) {
 };
 
 // Rotate vector in y axis
-Vector.prototype.rotateY = function(angle) {
+Vector.prototype.rotateY = function rotateY(angle) {
   const oldVector = new Vector(this.x, this.y, this.z);
   const sinang = Math.sin(angle);
   const cosang = Math.cos(angle);
@@ -154,7 +154,7 @@ Vector.prototype.rotateY = function(angle) {
 };
 
 // Rotate vector in z axis
-Vector.prototype.rotateZ = function(angle) {
+Vector.prototype.rotateZ = function rotateZ(angle) {
   const oldVector = new Vector(this.x, this.y, this.z);
   const sinang = Math.sin(angle);
   const cosang = Math.cos(angle);
