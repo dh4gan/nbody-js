@@ -134,7 +134,7 @@ Body.prototype.calcEccentricity = function calcEccentricity(G, totalmass) {
   const vdotr = this.velocity.dot(this.position);
   const gravparam = G * totalmass;
 
-  if (magpos === 0.0) {
+  if (magpos < 1.0e-5) {
     this.eccvec.setZero();
   } else {
     this.eccvec = this.position.scale(magvel *
@@ -641,6 +641,8 @@ Body.prototype.calcTimestep = function calcTimestep(greekEta) {
 
   if (normA * normS + normJ * normJ < tolerance) {
     console.log('warning in calcTimestep: numerator zero for '+this.name);
+      console.log(normJ, normA, normS, tolerance);
+      this.position.print();
     console.log(this.position.getMag() + '  ' + this.velocity.getMag());
     this.timestep = 0.0;
   } else if (normC * normJ + normS * normS < tolerance) {

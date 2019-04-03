@@ -173,9 +173,12 @@ NBodySystem.prototype.calcForces =
 	    bodyList[i].jerk.setZero();
 	    bodyList[i].snap.setZero();
 	    bodyList[i].crackle.setZero();
+        
+
 	    
 	    bodyList[i].calcAccelJerk(this.G, bodyList, this.softeningLength);
 	    bodyList[i].calcSnapCrackle(this.G, bodyList, this.softeningLength);
+        
 	}
     }
 
@@ -187,7 +190,6 @@ NBodySystem.prototype.evolveSystem =
 	 * a 4th order Hermite integration (via a predictor-corrector algorithm)
 	 */
 
-
 	let dtmax = 0.5 * (tend-tbegin);
 	/* i.  Calculate initial accelerations, jerks, snaps and crackles */
 	this.calcForces(this.bodies);
@@ -196,7 +198,7 @@ NBodySystem.prototype.evolveSystem =
 	this.calcTimestep();
 	this.calcTotalEnergy();
 	this.calcTotalAngularMomentum();
-
+    
 	/* iii. Clone the current body array */
 
 	let predicted = [];
@@ -205,19 +207,19 @@ NBodySystem.prototype.evolveSystem =
 	    predicted.push(this.bodies[i].clone());
 	}
 
-	let time = tbegin;
+	this.time = tbegin;
+        
+        let counter = 0;
 
-	while (time < tend)
+	while (this.time < tend)
 	{
-
 	    let t2 = this.timestep * this.timestep;
 	    let t3 = this.timestep * t2;
 	    
 	/* Calculate predicted positions and velocities */
 	for (let i = 0; i < this.N; i++)
 	    {
-
-            this.bodies[i].position.print();
+        
 	    // Pull the body object's data //
 	    let pos = this.bodies[i].position;
 	    let vel = this.bodies[i].velocity;
@@ -264,29 +266,60 @@ NBodySystem.prototype.evolveSystem =
 		accterm = acc_p.relativeVector(acc).scale(t2 / 12.0);
 		let velterm = this.bodies[i].velocity.add1(vel).scale(0.5 * this.timestep);
 		this.bodies[i].position = pos.add2(velterm, accterm);
-
+   
+            this.bodies[i].position.print();
+            this.bodies[i].velocity.print();
+            this.bodies[i].acceleration.print();
+            this.bodies[i].jerk.print();
 	    }
 	
+        //this.drawSystem();
+        this.calcForces(this.bodies);
+        
 
-	    this.calcForces(this.bodies);
 	    this.time = this.time + this.timestep;
 	    this.calcTimestep(dtmax);
 	    this.calcTotalEnergy();
 	    this.calcTotalAngularMomentum();
-
-	    this.drawSystem();
+        
+        counter++;
+        console.log(this.time, this.timestep);
+        /*if(counter >100)
+        {
+        throw new Error("STAHP");
+        }*/
 	}
     };
 
 NBodySystem.prototype.drawSystem =
 function drawSystem() {
-  
+    
+   
+    
+    var canvas = document.getElementById(this.canvasID);
+    var context = canvas.getContext('2d');
+    context.clearRect(0,0,canvas.width, canvas.height);
+    
   for (let ibody = 0; ibody < this.N; ibody++) {
+      
+      if(this.bodies[ibody].a > 1.0e-5)
+      {
     this.bodies[ibody].drawOrbit(this.G, this.totalMass,
         this.nOrbitPoints, this.canvasID, this.pixscale);
+      }
     this.bodies[ibody].draw2D(this.canvasID, this.pixscale);
+      
   }
+    document.getElementById("time").innerHTML = "Time = "+this.time.toString();
+    console.log("DRAWING ", this.time);
 };
+
+function sleep(miliseconds) {
+    var currentTime = new Date().getTime();
+    
+    while (currentTime + miliseconds >= new Date().getTime()) {
+    }
+}
 
 /**
  * Quick method to test NBodySystem
@@ -295,27 +328,29 @@ function testSystem() {
   const pixscale = 100.0;
   const system = new NBodySystem();
   system.calcTotalMass();
-
+    
+    system.time = 0.0;
+ var interval = setInterval(function() {system.drawSystem();},50);
   system.addBody(new Body(1.0, 10.0, 'yellow',
       new Vector(0.0, 0.0, 0.0), new Vector(0.0, 0.0, 0.0)));
 
-  system.addBody(createBodyFromOrbit(0.001, 10.0, 'green',
-      system.G, system.totalMass+0.001, 1.0, 0.1, 0.0, 0.0, 0.0, 0.0));
+  //system.addBody(createBodyFromOrbit(0.001, 10.0, 'green',
+    //  system.G, system.totalMass+0.001, 1.0, 0.1, 0.0, 0.0, 0.0, 0.0));
 
   system.addBody(createBodyFromOrbit(0.01, 10.0, 'blue', system.G,
       system.totalMass+0.01, 3.0, 0.4, 0.0, 0.0, 1.3, 0.0, 4.0));
     
+    //system.drawSystem();
+    
+    
+   
+    
     let tbegin = 0.0;
-    let dt = 1.0;
-    let tend = tbegin + dt;
-    for (let i=0; i<5; i++)
-    {
-    system.drawSystem();
+    let tend = 10;
+    
     system.evolveSystem(tbegin, tend);
-        tbegin = tend;
-        tend = tbegin+dt;
-        console.log(tbegin, tend);
-    }
+    //clearInterval(interval);
+    
 };
 
 testSystem();
