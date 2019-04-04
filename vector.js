@@ -17,7 +17,7 @@
    Vector:
 
    Attributes:  (x,y,z, mag)
-   Methods:     print, add, subtract, scale, unit, setZero,
+   Methods:     print, toString, add, subtract, scale, unit, setZero,
                 dot, cross,
                 rotateX, rotateY, rotateZ
  *************************************
@@ -65,9 +65,18 @@ function Vector(x=0.0, y=0.0, z=0.0) {
  */
 
 
+function precise(x,sigfig=3) {
+  return Number.parseFloat(x).toPrecision(4);
+}
+
+// Return a vector string
+Vector.prototype.toString = function toString(sigfig=3) {
+    return '('+precise(this.x,sigfig)+', '+precise(this.y,sigfig)+', '+precise(this.z,sigfig)+')'
+}
+
 // Print the vector to the console
 Vector.prototype.print = function print() {
-  console.log('('+this.x+', '+this.y+', '+this.z+')');
+    console.log(this.toString());
 };
 
 // Compute vector magnitude
