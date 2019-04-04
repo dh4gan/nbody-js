@@ -260,15 +260,14 @@ NBodySystem.prototype.evolveSystem =
 
 		let accterm = acc_p.add1(acc).scale(0.5 * this.timestep);
 
-		let jerkterm = jerk_p.relativeVector(jerk).scale(this.timestep
-							     * this.timestep / 12.0);
+		let jerkterm = jerk_p.relativeVector(jerk).scale(t2/ 12.0);
 
 		this.bodies[i].velocity = vel.add2(accterm, jerkterm);
 
 		accterm = acc_p.relativeVector(acc).scale(t2 / 12.0);
 		let velterm = this.bodies[i].velocity.add1(vel).scale(0.5 * this.timestep);
 		this.bodies[i].position = pos.add2(velterm, accterm);
-   
+		
 	    }
 	
         this.calcForces(this.bodies);
@@ -281,10 +280,10 @@ NBodySystem.prototype.evolveSystem =
         
         counter++;
         console.log(this.time, this.timestep);
-        if(counter >100)
+        /*if(counter >100)
         {
         throw new Error("STAHP");
-        }
+        }*/
 	}
     };
 
@@ -302,8 +301,9 @@ function drawSystem() {
       
       if(this.bodies[ibody].a > 1.0e-5)
       {
-    this.bodies[ibody].drawOrbit(this.G, this.totalMass,
-        this.nOrbitPoints, this.canvasID, this.pixscale);
+	  
+    //this.bodies[ibody].drawOrbit(this.G, this.totalMass,
+      //  this.nOrbitPoints, this.canvasID, this.pixscale);
       }
     this.bodies[ibody].draw2D(this.canvasID, this.pixscale);
 
@@ -315,24 +315,23 @@ function drawSystem() {
 
       
   }
-    document.getElementById("time").innerHTML = "Time = "+this.time.toString();
-    
-    console.log("DRAWING ", this.time);
+    console.log("DRAW "+ this.time);
+    document.getElementById("time").innerHTML = "Time = "+this.time.toPrecision(4).toString();
 
-   
 };
 
 NBodySystem.prototype.Run =
-    function Run(milliseconds)
+    function Run(milliseconds=1000)
 {
 
     var _this = this;
-    var interval = setInterval(this.drawSystem.bind(this),100);
+ 
+    var interval = setInterval(this.drawSystem.bind(this),milliseconds);
 
 }
 
 /**
- * Quick method to test NBodySystem
+ * Quick method to setup a test NBodySystem
  */
 function testSystem() {
   const pixscale = 100.0;
@@ -344,24 +343,13 @@ function testSystem() {
   system.addBody(new Body(1.0, 10.0, 'yellow',
       new Vector(0.0, 0.0, 0.0), new Vector(0.0, 0.0, 0.0)));
 
-  //system.addBody(createBodyFromOrbit(0.001, 10.0, 'green',
-    //  system.G, system.totalMass+0.001, 1.0, 0.1, 0.0, 0.0, 0.0, 0.0));
+  system.addBody(createBodyFromOrbit(0.001, 10.0, 'green',
+      system.G, system.totalMass+0.001, 1.0, 0.1, 0.0, 0.0, 0.0, 0.0));
 
   system.addBody(createBodyFromOrbit(0.01, 10.0, 'blue', system.G,
-      system.totalMass+0.01, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+      system.totalMass+0.01, 1.0, 0.4, 0.0, 0.0, 0.0, 0.0, 0.0));
     
-    //system.drawSystem();
-    
-    
-   
-    
-    let tbegin = 0.0;
     system.frameRate = 0.01
-
-    //var interval = setInterval(system.drawSystem(dt), 10);
-    
-    //system.evolveSystem(tbegin, tend);
-    //clearInterval(interval);
 
     return system;
     
@@ -371,7 +359,6 @@ function testSystem() {
 
 
 var system = testSystem();
-debugger;
 
 system.Run();
 
