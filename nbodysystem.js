@@ -73,7 +73,7 @@ function NBodySystem(timestep = 0.001, G = 1.0,
     this.nOrbitPoints = 100 // Number of points for drawing orbits
     this.canvasID = "myCanvas"
     this.pixscale = 100.0;
-    this.timestepTolerance = 0.001;
+    this.timestepTolerance = 0.000001;
 }
 
 NBodySystem.prototype.calcTotalMass =
@@ -133,6 +133,24 @@ NBodySystem.prototype.addBody = function addBody(body) {
   this.calcTotalMass();
   this.calcCOM();
 };
+
+
+NBodySystem.prototype.changeFrame = function changeFrame(framePosition,frameVelocity) {
+
+    for (let ibody=0; ibody< this.N; ibody++)
+    {
+
+	this.bodies[ibody].position = this.bodies[ibody].position.subtract(framePosition);
+	this.bodies[ibody].velocity = this.bodies[ibody].velocity.subtract(frameVelocity);
+    
+    }
+}
+
+NBodySystem.prototype.changeToCOMFrame = function changeToCOMFrame() {
+
+	this.changeFrame(this.positionCOM, this.velocityCOM);
+}
+    
 
 NBodySystem.prototype.setupOrbits =
 function setupOrbits() {
@@ -317,7 +335,8 @@ NBodySystem.prototype.Run =
     function Run(milliseconds=1000)
 {
 
-    var _this = this;
+    this.calcCOM();
+    this.changeToCOMFrame();
  
     var interval = setInterval(this.drawSystem.bind(this),milliseconds);
 
@@ -339,7 +358,7 @@ function testSystem() {
   //system.addBody(createBodyFromOrbit(0.001, 10.0, 'green',
   //    system.G, system.totalMass+0.001, 1.0, 0.1, 0.0, 0.0, 0.0, 0.0));
 
-  system.addBody(createBodyFromOrbit(0.01, 10.0, 'blue', system.G,
+  system.addBody(createBodyFromOrbit(3.0e-6, 10.0, 'blue', system.G,
       system.totalMass+0.01, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
     
     system.frameRate = 0.01
@@ -353,5 +372,5 @@ function testSystem() {
 
 var system = testSystem();
 
-system.Run(10);
+system.Run(1000);
 

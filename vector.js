@@ -71,7 +71,7 @@ function precise(x,sigfig=3) {
 
 // Return a vector string
 Vector.prototype.toString = function toString(sigfig=3) {
-    return '('+precise(this.x,sigfig)+', '+precise(this.y,sigfig)+', '+precise(this.z,sigfig)+')'
+    return '('+precise(this.x,sigfig)+', '+precise(this.y,sigfig)+', '+precise(this.z,sigfig)+'), magnitude: '+precise(this.mag,sigfig);
 }
 
 // Print the vector to the console
