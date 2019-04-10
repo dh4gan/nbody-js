@@ -74,7 +74,7 @@ function NBodySystem(timestep = 0.001, G = 1.0,
     this.nOrbitPoints = 100 // Number of points for drawing orbits
     this.canvasID = "myCanvas"
     this.pixscale = 100.0;
-    this.timestepTolerance = 0.000001;
+    this.timestepTolerance = 0.000000001;
 }
 
 NBodySystem.prototype.calcTotalMass =
@@ -368,8 +368,8 @@ function testSystem() {
   //system.addBody(createBodyFromOrbit(0.001, 10.0, 'green',
   //    system.G, system.totalMass+0.001, 1.0, 0.1, 0.0, 0.0, 0.0, 0.0));
 
-  system.addBody(createBodyFromOrbit(3.0e-6, 10.0, 'blue', system.G,
-      system.totalMass+3.0e-6, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+  system.addBody(createBodyFromOrbit(1.0e-10, 10.0, 'blue', system.G,
+      system.totalMass, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
     
     system.frameRate = 0.01
 

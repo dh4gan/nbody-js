@@ -312,6 +312,7 @@ eccentricity and true anomaly */
     magvel = 0.0;
   }
 
+    debugger;
   velocity.x = -magvel * Math.sin(trueanom);
   velocity.y = magvel * (Math.cos(trueanom) + e);
   velocity.z = 0.0;
