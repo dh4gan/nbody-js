@@ -67,7 +67,8 @@ function NBodySystem(timestep = 0.001, G = 1.0,
     this.angmom = new Vector();
     this.positionCOM = new Vector();
     this.velocityCOM = new Vector();
-    this.totalEnergy = 0.0;
+    this.totalEnergy = undefined;
+    this.initialEnergy = undefined;
     this.totalMass = 0.0;
 
     this.nOrbitPoints = 100 // Number of points for drawing orbits
@@ -124,7 +125,16 @@ NBodySystem.prototype.calcTotalEnergy =
 	    }
 	}
 
+	if(this.totalEnergy == undefined)
+	{
+	    this.initialEnergy = kineticEnergy-potentialEnergy;
+	}
 	this.totalEnergy = kineticEnergy - potentialEnergy;
+
+	if(this.initialEnergy !== undefined)
+	{
+	    this.dE = 100*(this.totalEnergy-this.initialEnergy)/this.initialEnergy;
+	}
 };
 
 NBodySystem.prototype.addBody = function addBody(body) {
@@ -328,7 +338,8 @@ function drawSystem() {
       
   }
 
-    document.getElementById("time").innerHTML = "Time = "+this.time.toPrecision(4).toString();
+    this.calcTotalEnergy();
+    document.getElementById("time").innerHTML = "Time = "+this.time.toPrecision(4).toString() + "<br>Energy= "+this.totalEnergy.toPrecision(4).toString() + "<br> dE = "+this.dE.toPrecision(4).toString()+"%";
 };
 
 NBodySystem.prototype.Run =
