@@ -279,11 +279,7 @@ NBodySystem.prototype.evolveSystem =
 	    this.calcTotalAngularMomentum();
         
         counter++;
-        console.log(this.time, this.timestep);
-        /*if(counter >100)
-        {
-        throw new Error("STAHP");
-        }*/
+       
 	}
     };
 
@@ -301,23 +297,20 @@ function drawSystem() {
       
       if(this.bodies[ibody].a > 1.0e-5)
       {
+	  this.bodies[ibody].calcOrbitFromVector(this.G, this.totalMass);
 	  
-    //this.bodies[ibody].drawOrbit(this.G, this.totalMass,
-      //  this.nOrbitPoints, this.canvasID, this.pixscale);
+    this.bodies[ibody].drawOrbit(this.G, this.totalMass,
+        this.nOrbitPoints, this.canvasID, this.pixscale);
       }
     this.bodies[ibody].draw2D(this.canvasID, this.pixscale);
 
       let bodyElementId = "Body"+(ibody+1);
-      document.getElementById(bodyElementId).innerHTML = bodyElementId+" Position: "+this.bodies[ibody].position.toString()+
-	  "<br>Velocity:"+this.bodies[ibody].velocity.toString()+
-	  "<br>Acceleration:"+this.bodies[ibody].acceleration.toString()+
-	  "<br>Jerk:"+this.bodies[ibody].jerk.toString();
+      document.getElementById(bodyElementId).innerHTML = bodyElementId+this.bodies[ibody].printOrbit()+ "<br>"+this.bodies[ibody].printVectors();
 
       
   }
-    console.log("DRAW "+ this.time);
-    document.getElementById("time").innerHTML = "Time = "+this.time.toPrecision(4).toString();
 
+    document.getElementById("time").innerHTML = "Time = "+this.time.toPrecision(4).toString();
 };
 
 NBodySystem.prototype.Run =
@@ -343,11 +336,11 @@ function testSystem() {
   system.addBody(new Body(1.0, 10.0, 'yellow',
       new Vector(0.0, 0.0, 0.0), new Vector(0.0, 0.0, 0.0)));
 
-  system.addBody(createBodyFromOrbit(0.001, 10.0, 'green',
-      system.G, system.totalMass+0.001, 1.0, 0.1, 0.0, 0.0, 0.0, 0.0));
+  //system.addBody(createBodyFromOrbit(0.001, 10.0, 'green',
+  //    system.G, system.totalMass+0.001, 1.0, 0.1, 0.0, 0.0, 0.0, 0.0));
 
   system.addBody(createBodyFromOrbit(0.01, 10.0, 'blue', system.G,
-      system.totalMass+0.01, 1.0, 0.4, 0.0, 0.0, 0.0, 0.0, 0.0));
+      system.totalMass+0.01, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
     
     system.frameRate = 0.01
 
@@ -360,5 +353,5 @@ function testSystem() {
 
 var system = testSystem();
 
-system.Run();
+system.Run(10);
 

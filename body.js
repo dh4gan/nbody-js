@@ -108,14 +108,33 @@ function Body(mass, size, colour, position, velocity) {
 
 
 Body.prototype.clone = function clone() {
-  return new Body(this.mass, this.size, this.colour,
-      this.position, this.velocity);
+  //return new Body(this.mass, this.size, this.colour,
+    //    this.position, this.velocity);
+    return Object.create(this);
 };
 
+function precise(x,sigfig=3) {
+    return Number.parseFloat(x).toPrecision(4);
+}
 
 Body.prototype.print = function print() {
   console.log('Body: '+this.mass);
 };
+
+Body.prototype.printOrbit = function printOrbit() {
+    
+    let orbitString = "(a,e,i,argper,longascend,trueanom) = ("+precise(this.a) + "  "+ precise(this.e) + "  "+ precise(this.i)+ "  "+ precise(this.argper) + "  "+ precise(this.longascend) + "  "+ precise(this.trueanom)+")";
+    return orbitString
+}
+
+Body.prototype.printVectors = function printVectors() {
+    
+    let vectorString = "<br>Position: "+this.position.toString()+
+    "<br>Velocity:"+this.velocity.toString()+
+    "<br>Acceleration:"+this.acceleration.toString()+
+    "<br>Jerk:"+this.jerk.toString();
+    return vectorString
+}
 
 
 // Calculate orbital angular momentum of body
@@ -189,7 +208,7 @@ function calcOrbitFromVector(G, totalmass) {
     this.longascend = Math.acos(nplane.x / nscalar);
 
     if (nplane.y < 0.0) {
-      this.longascend = 2.0 * Math.pi - this.longascend;
+      this.longascend = 2.0 * Math.PI - this.longascend;
     }
   }
 
@@ -206,7 +225,7 @@ function calcOrbitFromVector(G, totalmass) {
       this.trueanom = 0.0;
     }
     if (this.velocity.x < 0.0) {
-      this.trueanom = 2.0 * Math.pi - this.trueanom;
+      this.trueanom = 2.0 * Math.PI - this.trueanom;
     }
   } else if (this.e === 0.0) {
     // If orbit circular and inclination non-zero,
@@ -220,21 +239,30 @@ function calcOrbitFromVector(G, totalmass) {
     this.trueanom = Math.acos(ndotR);
 
     if (ndotV > 0.0) {
-      this.trueanom = 2.0 * Math.pi - this.trueanom;
-    } else {
+      this.trueanom = 2.0 * Math.PI - this.trueanom;
+    }
+  }
+    else {
     // For non-circular orbits use the eccentricity vector
       edotR = this.eccvec.dot(this.position);
       edotR /= (magpos * this.e);
 
       rdotV = this.velocity.dot(this.position);
 
+    edotR = edotR>1.0 ? 1.0 : edotR < -1.0 ? -1.0 : edotR;
       this.trueanom = Math.acos(edotR);
 
+        
       if (rdotV < 0.0) {
-        this.trueanom = 2.0 * Math.pi - this.trueanom;
+        this.trueanom = 2.0 * Math.PI - this.trueanom;
       }
     }
-  }
+  
+    if(this.trueanom!==this.trueanom)
+    {
+        debugger;
+    }
+ 
 
   // Finally, calculate the longitude of periapsis
   // First calculate the argument of periapsis
@@ -245,7 +273,7 @@ function calcOrbitFromVector(G, totalmass) {
 
     this.argper = Math.acos(edotn);
     if (this.eccvec.z < 0.0) {
-      this.argper = 2.0 * Math.pi - this.argper;
+      this.argper = 2.0 * Math.PI - this.argper;
     }
 
     this.longper = this.argper + this.longascend;
@@ -256,25 +284,25 @@ function calcOrbitFromVector(G, totalmass) {
 };
 
 // Given orbital parameters, computes position and velocity of body
+// We need a static version of this method for drawing orbits
 
-Body.prototype.calcVectorFromOrbit =
-function calcVectorFromOrbit(G, totalmass) {
-  /*console.log('Orbit', this.a, this.e, this.i,
-      this.longascend, this.argper, this.trueanom);*/
+calcPositionVelocityFromOrbit = function calcPositionVelocityFromOrbit(G, totalmass, a,e,i, argper, longascend, trueanom) {
   /* 1. calculate distance from CoM using semimajor axis,
 eccentricity and true anomaly */
 
-  const magpos = this.a * (1.0 - this.e * this.e) /
-(1.0 + this.e * Math.cos(this.trueanom));
+  const magpos = a * (1.0 - e * e) /
+(1.0 + e * Math.cos(trueanom));
 
+    var position = new Vector();
+    var velocity = new Vector();
   /* 2. Calculate position vector in orbital plane */
 
-  this.position.x = magpos * Math.cos(this.trueanom);
-  this.position.y = magpos * Math.sin(this.trueanom);
-  this.position.z = 0.0;
+  position.x = magpos * Math.cos(trueanom);
+  position.y = magpos * Math.sin(trueanom);
+  position.z = 0.0;
 
   /* 3. Calculate velocity vector in orbital plane */
-  const semiLatusRectum = Math.abs(this.a * (1.0 - this.e * this.e));
+  const semiLatusRectum = Math.abs(a * (1.0 - e * e));
   const gravparam = G * totalmass;
 
   let magvel = 0.0;
@@ -284,32 +312,44 @@ eccentricity and true anomaly */
     magvel = 0.0;
   }
 
-  this.velocity.x = -magvel * Math.sin(this.trueanom);
-  this.velocity.y = magvel * (Math.cos(this.trueanom) + this.e);
-  this.velocity.z = 0.0;
+  velocity.x = -magvel * Math.sin(trueanom);
+  velocity.y = magvel * (Math.cos(trueanom) + e);
+  velocity.z = 0.0;
 
   /* 4. Begin rotations:
      * Firstly, Rotation around z axis by argument of Periapsis */
 
-  if (this.argper != 0.0) {
-    this.position.rotateZ(-1 * this.argper);
-    this.velocity.rotateZ(-1 * this.argper);
+  if (argper != 0.0) {
+    position.rotateZ(-1 * argper);
+    velocity.rotateZ(-1 * argper);
   }
 
   /* Secondly, Rotate around x by inclination */
 
-  if (this.i != 0.0) {
-    this.position.rotateX(-1 * this.i);
-    this.velocity.rotateX(-1 * this.i);
+  if (i != 0.0) {
+    position.rotateX(-1 * i);
+    velocity.rotateX(-1 * i);
   }
 
   /* Lastly, Rotate around z by longitude of ascending node */
 
-  if (this.longascend != 0.0) {
-    this.position.rotateZ(-1 * this.longascend);
-    this.velocity.rotateZ(-1 * this.longascend);
+  if (longascend != 0.0) {
+    position.rotateZ(-1 * longascend);
+    velocity.rotateZ(-1 * longascend);
   }
+    
+    return [position,velocity]
 };
+
+
+Body.prototype.calcVectorFromOrbit = function calcVectorFromOrbit(G, totalmass) {
+    
+    var self=this;
+    var positionVelocity = calcPositionVelocityFromOrbit(G, totalmass, self.a,self.e,self.i, self.argper,self.longascend,self.trueanom);
+    this.position = positionVelocity[0];
+    this.velocity = positionVelocity[1];
+    
+}
 
 
 // Returns the orbital period of the body
@@ -369,35 +409,34 @@ Body.prototype.draw2D = function draw2D(canvasID, pixscale) {
 // Draws an ellipse corresponding to a given orbit
 Body.prototype.drawOrbit = function drawOrbit(G, totalmass,
     npoints, canvasID, pixscale) {
-  const dummyBody = this.clone();
-  dummyBody.calcOrbitFromVector(G, totalmass);
-
-  if (dummyBody.a >0.0) {
+  
+    self = this;
+  if (self.a >0.0) {
     const dphi = 2.0 * Math.PI / npoints;
 
     const canvas = document.getElementById(canvasID);
     const context = canvas.getContext('2d');
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
-    let offSetX = centerX + dummyBody.position.x;
-    let offSetY = centerY + dummyBody.position.y;
+      
+    let offSetX = centerX + self.position.x;
+    let offSetY = centerY + self.position.y;
 
     context.moveTo(offSetX, offSetY);
     context.beginPath();
-    context.strokeStyle = this.colour;
+    context.strokeStyle = self.colour;
     context.linewidth = 0.5;
     context.setLineDash([2, 3]);
 
+      let nu = 0.0;
     for (i = 0; i < npoints; i++) {
-      dummyBody.trueanom += dphi;
-      if (dummyBody.trueanom > 2.0 * Math.Pi) {
-        dummyBody.trueanom -= 2.0 * Math.Pi;
-      }
+        nu +=dphi;
 
-      dummyBody.calcVectorFromOrbit(G, totalmass);
 
-      offSetX = centerX + pixscale * (dummyBody.position.x);
-      offSetY = centerY + pixscale * (dummyBody.position.y);
+      var positionVelocity = calcPositionVelocityFromOrbit(G, totalmass, self.a,self.e,self.i,self.argper,self.longascend,nu);
+
+      offSetX = centerX + pixscale * (positionVelocity[0].x);
+      offSetY = centerY + pixscale * (positionVelocity[0].y);
       context.lineTo(offSetX, offSetY);
       context.stroke();
       context.moveTo(offSetX, offSetY);
