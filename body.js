@@ -499,6 +499,7 @@ function calcAccelJerk(G, bodyarray, softeningLength) {
   for (b = 0; b < N; b++) {
     // Get relative position and velocity
 
+      debugger;
     relativePosition = this.position.relativeVector(bodyarray[b].position);
     relativeVelocity = this.velocity.relativeVector(bodyarray[b].velocity);
 
@@ -539,6 +540,7 @@ function calcAccelJerk(G, bodyarray, softeningLength) {
 
     // jerk = jerk - jerkterm
     this.jerk = jerkterm.relativeVector(this.jerk);
+      debugger;
   } // End of loop
   // End of method
 };

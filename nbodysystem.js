@@ -62,7 +62,7 @@ function NBodySystem(timestep = 0.001, G = 1.0,
   this.bodies = bodies;
     this.N = bodies.length;
 
-    this.frameRate = 0.01
+    this.frameRate = 0.00000000001;
 
     this.angmom = new Vector();
     this.positionCOM = new Vector();
@@ -298,7 +298,7 @@ NBodySystem.prototype.evolveSystem =
 		
 	    }
 	
-        this.calcForces(this.bodies);
+            this.calcForces(this.bodies);
         
 
 	    this.time = this.time + this.timestep;
@@ -338,7 +338,6 @@ function drawSystem() {
       
   }
 
-    this.calcTotalEnergy();
     document.getElementById("time").innerHTML = "Time = "+this.time.toPrecision(4).toString() + "<br>Energy= "+this.totalEnergy.toPrecision(4).toString() + "<br> dE = "+this.dE.toPrecision(4).toString()+"%";
 };
 
@@ -370,7 +369,7 @@ function testSystem() {
   //    system.G, system.totalMass+0.001, 1.0, 0.1, 0.0, 0.0, 0.0, 0.0));
 
   system.addBody(createBodyFromOrbit(3.0e-6, 10.0, 'blue', system.G,
-      system.totalMass+0.01, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+      system.totalMass+3.0e-6, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
     
     system.frameRate = 0.01
 
@@ -383,5 +382,5 @@ function testSystem() {
 
 var system = testSystem();
 
-system.Run(1000);
+system.Run(3000);
 
