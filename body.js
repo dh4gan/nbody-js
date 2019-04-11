@@ -258,12 +258,6 @@ function calcOrbitFromVector(G, totalmass) {
       }
     }
   
-    if(this.trueanom!==this.trueanom)
-    {
-        debugger;
-    }
- 
-
   // Finally, calculate the longitude of periapsis
   // First calculate the argument of periapsis
 
@@ -312,7 +306,6 @@ eccentricity and true anomaly */
     magvel = 0.0;
   }
 
-    debugger;
   velocity.x = -magvel * Math.sin(trueanom);
   velocity.y = magvel * (Math.cos(trueanom) + e);
   velocity.z = 0.0;
@@ -500,7 +493,6 @@ function calcAccelJerk(G, bodyarray, softeningLength) {
   for (b = 0; b < N; b++) {
     // Get relative position and velocity
 
-      debugger;
     relativePosition = this.position.relativeVector(bodyarray[b].position);
     relativeVelocity = this.velocity.relativeVector(bodyarray[b].velocity);
 
@@ -541,7 +533,6 @@ function calcAccelJerk(G, bodyarray, softeningLength) {
 
     // jerk = jerk - jerkterm
     this.jerk = jerkterm.relativeVector(this.jerk);
-      debugger;
   } // End of loop
   // End of method
 };

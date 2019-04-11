@@ -205,7 +205,6 @@ NBodySystem.prototype.calcForces =
 	    bodyList[i].crackle.setZero();
         
 
-	    
 	    bodyList[i].calcAccelJerk(this.G, bodyList, this.softeningLength);
 	    bodyList[i].calcSnapCrackle(this.G, bodyList, this.softeningLength);
         
@@ -265,7 +264,7 @@ NBodySystem.prototype.evolveSystem =
 		    0.5 * t2));
 
 	    }
-	
+        
 
 	    /* 2. Use predicted positions and velocities to calculate
 	     * predicted accelerations, jerks, snaps and crackles */
@@ -382,5 +381,5 @@ function testSystem() {
 
 var system = testSystem();
 
-system.Run(3000);
+system.Run(30);
 
