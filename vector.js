@@ -64,6 +64,9 @@ function Vector(x=0.0, y=0.0, z=0.0) {
   Vector object methods
  */
 
+function cloneVector(v) {
+    return new Vector(v.x,v.y,v.z);
+}
 
 function precise(x,sigfig=3) {
   return Number.parseFloat(x).toPrecision(4);

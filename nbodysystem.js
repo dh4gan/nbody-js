@@ -228,15 +228,7 @@ NBodySystem.prototype.evolveSystem =
 	this.calcTotalEnergy();
 	this.calcTotalAngularMomentum();
     
-	/* iii. Clone the current body array */
-
-	let predicted = [];
-
-	for (let i=0; i<this.N; i++) {
-	    predicted.push(this.bodies[i].clone());
-	}
-        
-        let counter = 0;
+	
 
 	let tend = this.time + this.frameRate;
 	
@@ -245,10 +237,24 @@ NBodySystem.prototype.evolveSystem =
 	    let t2 = this.timestep * this.timestep;
 	    let t3 = this.timestep * t2;
 	    
+    /* iii. Perform the prediction step */
+        
+        // Arrays to store old co-ordinates
+        let pos_old = [];
+        let vel_old = [];
+        let acc_old = [];
+        let jerk_old = [];
 	/* Calculate predicted positions and velocities */
 	for (let i = 0; i < this.N; i++)
 	    {
         
+            
+        // Store old velocity, acceleration and jerk
+            pos_old.push(cloneVector(this.bodies[i].position));
+            vel_old.push(cloneVector(this.bodies[i].velocity));
+            acc_old.push(cloneVector(this.bodies[i].acceleration));
+            jerk_old.push(cloneVector(this.bodies[i].jerk));
+            
 	    // Pull the body object's data //
 	    let pos = this.bodies[i].position;
 	    let vel = this.bodies[i].velocity;
@@ -256,44 +262,39 @@ NBodySystem.prototype.evolveSystem =
 	    let jerk = this.bodies[i].jerk;
 
 
-	    // 1. Calculate predicted position and velocity //
-	    predicted[i].position = pos.add3(vel.scale(this.timestep), acc.scale(
+	    // Calculate predicted position and velocity //
+	    this.bodies[i].position = pos.add3(vel.scale(this.timestep), acc.scale(
 		    0.5 * t2), jerk.scale(t3 / 6.0));
 
-	    predicted[i].velocity = vel.add2(acc.scale(this.timestep), jerk.scale(
+	    this.bodies[i].velocity = vel.add2(acc.scale(this.timestep), jerk.scale(
 		    0.5 * t2));
 
 	    }
         
 
-	    /* 2. Use predicted positions and velocities to calculate
+	    /* iv. Use predicted positions and velocities to calculate
 	     * predicted accelerations, jerks, snaps and crackles */
 
-	    this.calcForces(predicted);
+	    this.calcForces(this.bodies);
 
-
+        /* v. Perform the correction step */
 	    for (let i = 0; i < this.N; i++)
 	    {
-
-		let pos_p = predicted[i].position;
-		let vel_p = predicted[i].velocity;
-		let acc_p = predicted[i].acceleration;
-		let jerk_p = predicted[i].jerk;
 
 		let pos = this.bodies[i].position;
 		let vel = this.bodies[i].velocity;
 		let acc = this.bodies[i].acceleration;
 		let jerk = this.bodies[i].jerk;
 
-		let accterm = acc_p.add1(acc).scale(0.5 * this.timestep);
+		let accterm = this.bodies[i].acceleration.add1(acc_old[i]).scale(0.5 * this.timestep);
 
-		let jerkterm = jerk_p.relativeVector(jerk).scale(t2/ 12.0);
+		let jerkterm = this.bodies[i].jerk.relativeVector(jerk_old[i]).scale(t2/ 12.0);
 
-		this.bodies[i].velocity = vel.add2(accterm, jerkterm);
+		this.bodies[i].velocity = vel_old[i].add2(accterm, jerkterm);
 
-		accterm = acc_p.relativeVector(acc).scale(t2 / 12.0);
-		let velterm = this.bodies[i].velocity.add1(vel).scale(0.5 * this.timestep);
-		this.bodies[i].position = pos.add2(velterm, accterm);
+		accterm = this.bodies[i].acceleration.relativeVector(acc_old[i]).scale(t2 / 12.0);
+		let velterm = vel_old[i].add1(vel).scale(0.5 * this.timestep);
+		this.bodies[i].position = pos_old[i].add2(velterm, accterm);
 		
 	    }
 	
@@ -304,9 +305,7 @@ NBodySystem.prototype.evolveSystem =
 	    this.calcTimestep(dtmax);
 	    this.calcTotalEnergy();
 	    this.calcTotalAngularMomentum();
-        
-        counter++;
-       
+
 	}
     };
 
@@ -355,7 +354,7 @@ NBodySystem.prototype.Run =
  * Quick method to setup a test NBodySystem
  */
 function testSystem() {
-  const pixscale = 100.0;
+  
   const system = new NBodySystem();
   system.calcTotalMass();
     
