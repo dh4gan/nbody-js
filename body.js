@@ -404,30 +404,37 @@ Body.prototype.draw2D = function draw2D(canvasID, pixscale) {
 Body.prototype.drawOrbit = function drawOrbit(G, totalmass,
     npoints, canvasID, pixscale) {
   
-    let self=this;
-  if (Math.abs(this.a) >1.0e-5) {
-    const dphi = 2.0 * Math.PI / npoints;
-
+    self=this;
+    
     const canvas = document.getElementById(canvasID);
     const context = canvas.getContext('2d');
+    
+  if (self.a >0.0) {
+    const dphi = 2.0 * Math.PI / npoints;
+
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
       
-    let minoraxis = this.a*(1.0-this.e);
-      let focus_distance = Math.sqrt(this.a*this.a - minoraxis*minoraxis);
+    let minoraxis = this.a*Math.sqrt((1.0-this.e*this.e));
+    
+    let focus_distance = Math.sqrt(this.a*this.a - minoraxis*minoraxis);
       
-    console.log(this.a + "  " + this.e + "   " + focus_distance);
-    //const centerX = canvas.width / 2 + 0.5*focus_distance*pixscale*Math.cos(this.argper);
-    //const centerY = canvas.height / 2 + 0.5*focus_distance*pixscale*Math.sin(this.argper);
-      const centerX = canvas.width/2;
-      const centerY = canvas.width/2;
+    const focusX = canvas.width / 2  - focus_distance*pixscale*Math.cos(2.0*Math.PI - this.argper);
+    const focusY = canvas.height / 2 - focus_distance*pixscale*Math.sin(2.0*Math.PI - this.argper);
+
     
       
-      /*context.beginPath();
+      context.beginPath();
       context.strokeStyle = this.colour;
-      context.ellipse(centerX, centerY, this.a*pixscale, minoraxis*pixscale, this.argper, 0.0, 2.0 * Math.PI);
+      context.linewidth = 0.01;
+      //context.setLineDash([2, 3]);
+      context.ellipse(focusX, focusY, this.a*pixscale, minoraxis*pixscale, this.argper, 0.0, 2.0 * Math.PI);
       context.stroke();
-      context.globalAlpha = 1.0;*/
       
-      
+  }
+    // If orbit open, use the multiple point draw
+    else
+    {
     let offSetX = centerX + self.position.x;
     let offSetY = centerY + self.position.y;
 
@@ -440,10 +447,6 @@ Body.prototype.drawOrbit = function drawOrbit(G, totalmass,
       let nu = 0.0;
     for (i = 0; i < npoints; i++) {
         nu +=dphi;
-        if(nu>2.0* Math.PI)
-        {
-            nu = nu - 2.0* Math.PI;
-        }
 
       var positionVelocity = calcPositionVelocityFromOrbit(G, totalmass, self.a,self.e,self.i,self.argper,self.longascend,nu);
 
@@ -453,8 +456,9 @@ Body.prototype.drawOrbit = function drawOrbit(G, totalmass,
       context.stroke();
       context.moveTo(offSetX, offSetY);
     }
-    context.globalAlpha = 1.0;
-  }
+    }
+    
+    context.globalAlpha=1.0;
 };
 
 
