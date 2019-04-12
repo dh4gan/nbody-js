@@ -363,11 +363,11 @@ function testSystem() {
   system.addBody(new Body(1.0, 10.0, 'yellow',
       new Vector(0.0, 0.0, 0.0), new Vector(0.0, 0.0, 0.0)));
 
-  //system.addBody(createBodyFromOrbit(0.001, 10.0, 'green',
-  //    system.G, system.totalMass+0.001, 1.0, 0.1, 0.0, 0.0, 0.0, 0.0));
+  system.addBody(createBodyFromOrbit(0.001, 10.0, 'green',
+      system.G, system.totalMass+0.001, 1.0, 0.1, 0.0, 0.0, 0.0, 0.0));
 
-  system.addBody(createBodyFromOrbit(1.0e-10, 10.0, 'blue', system.G,
-      system.totalMass, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+  system.addBody(createBodyFromOrbit(0.001, 10.0, 'blue', system.G,
+      system.totalMass+0.002, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
     
     system.frameRate = 0.01
 
