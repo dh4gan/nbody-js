@@ -364,10 +364,10 @@ function testSystem() {
       new Vector(0.0, 0.0, 0.0), new Vector(0.0, 0.0, 0.0)));
 
   system.addBody(createBodyFromOrbit(0.001, 10.0, 'green',
-      system.G, system.totalMass+0.001, 1.0, 0.1, 0.0, 0.0, 0.0, 0.0));
+      system.G, system.totalMass+0.001, 1.0, 0.3, 0.0, 0.0, 0.0, 0.0));
 
-  system.addBody(createBodyFromOrbit(0.001, 10.0, 'blue', system.G,
-      system.totalMass+0.002, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+  //system.addBody(createBodyFromOrbit(0.001, 10.0, 'blue', system.G,
+  //    system.totalMass+0.002, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
     
     system.frameRate = 0.01
 

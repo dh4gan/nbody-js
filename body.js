@@ -404,14 +404,29 @@ Body.prototype.draw2D = function draw2D(canvasID, pixscale) {
 Body.prototype.drawOrbit = function drawOrbit(G, totalmass,
     npoints, canvasID, pixscale) {
   
-    self = this;
-  if (self.a >0.0) {
+    let self=this;
+  if (Math.abs(this.a) >1.0e-5) {
     const dphi = 2.0 * Math.PI / npoints;
 
     const canvas = document.getElementById(canvasID);
     const context = canvas.getContext('2d');
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
+      
+    let minoraxis = this.a*(1.0-this.e);
+      let focus_distance = Math.sqrt(this.a*this.a - minoraxis*minoraxis);
+      
+    console.log(this.a + "  " + this.e + "   " + focus_distance);
+    //const centerX = canvas.width / 2 + 0.5*focus_distance*pixscale*Math.cos(this.argper);
+    //const centerY = canvas.height / 2 + 0.5*focus_distance*pixscale*Math.sin(this.argper);
+      const centerX = canvas.width/2;
+      const centerY = canvas.width/2;
+    
+      
+      /*context.beginPath();
+      context.strokeStyle = this.colour;
+      context.ellipse(centerX, centerY, this.a*pixscale, minoraxis*pixscale, this.argper, 0.0, 2.0 * Math.PI);
+      context.stroke();
+      context.globalAlpha = 1.0;*/
+      
       
     let offSetX = centerX + self.position.x;
     let offSetY = centerY + self.position.y;
@@ -425,7 +440,10 @@ Body.prototype.drawOrbit = function drawOrbit(G, totalmass,
       let nu = 0.0;
     for (i = 0; i < npoints; i++) {
         nu +=dphi;
-
+        if(nu>2.0* Math.PI)
+        {
+            nu = nu - 2.0* Math.PI;
+        }
 
       var positionVelocity = calcPositionVelocityFromOrbit(G, totalmass, self.a,self.e,self.i,self.argper,self.longascend,nu);
 
