@@ -1,4 +1,3 @@
-/* eslint linebreak-style: ["error", "windows"] */
 /* vector.js
  *  Written 05-March-2018 by dh4gan
  *
@@ -60,21 +59,21 @@ function NBodySystem(timestep = 0.001, G = 1.0,
   this.G = G;
   this.softeningLength = softeningLength;
   this.bodies = bodies;
-    this.N = bodies.length;
+  this.N = bodies.length;
 
-    this.frameRate = 0.00000000001;
+  this.frameRate = 0.00000000001;
 
-    this.angmom = new Vector();
-    this.positionCOM = new Vector();
-    this.velocityCOM = new Vector();
-    this.totalEnergy = undefined;
-    this.initialEnergy = undefined;
-    this.totalMass = 0.0;
+  this.angmom = new Vector();
+  this.positionCOM = new Vector();
+  this.velocityCOM = new Vector();
+  this.totalEnergy = undefined;
+  this.initialEnergy = undefined;
+  this.totalMass = 0.0;
 
-    this.nOrbitPoints = 100 // Number of points for drawing orbits
-    this.canvasID = "myCanvas"
-    this.pixscale = 100.0;
-    this.timestepTolerance = 0.000000001;
+  this.nOrbitPoints = 100; // Number of points for drawing orbits
+  this.canvasID = 'myCanvas';
+  this.pixscale = 100.0;
+  this.timestepTolerance = 0.00001;
 }
 
 NBodySystem.prototype.calcTotalMass =
@@ -87,55 +86,49 @@ function calcTotalMass() {
 
 NBodySystem.prototype.calcCOM =
     function calcCOM() {
+      this.positionCOM.setZero();
+      this.velocityCOM.setZero();
 
-	
-	this.positionCOM.setZero();
-	this.velocityCOM.setZero();
-
-	if(this.totalmass > 0.0) {
-	
-	    for(let ibody=0; ibody<this.N; ibody++) {
-		this.positionCOM = this.positionCOM.add(this.bodies[ibody].position.scale(this.bodies[ibody].mass));
-		this.velocityCOM = this.velocityCOM.add(this.bodies[ibody].velocity.scale(this.bodies[ibody].mass));
-		
+      if (this.totalmass > 0.0) {
+	    for (let ibody=0; ibody<this.N; ibody++) {
+          this.positionCOM = this.positionCOM.add(this.bodies[ibody].position.scale(this.bodies[ibody].mass));
+          this.velocityCOM = this.velocityCOM.add(this.bodies[ibody].velocity.scale(this.bodies[ibody].mass));
 	    }
 
-	    this.positionCOM = this.positionCOM.scale(1.0/this.totalMass)
+	    this.positionCOM = this.positionCOM.scale(1.0/this.totalMass);
 	    this.velocityCOM = this.velocityCOM.scale(1.0/this.totalMass);
-	}
+      }
     };
 
 NBodySystem.prototype.calcTotalEnergy =
     function calcTotalEnergy() {
+      let kineticEnergy = 0.0;
+      let potentialEnergy = 0.0;
 
-	let kineticEnergy = 0.0;
-	let potentialEnergy = 0.0;
-	
-	for (let ibody=0; ibody< this.N; ibody++) {
-	    let speed = this.bodies[ibody].velocity.getMag();
+      for (let ibody=0; ibody< this.N; ibody++) {
+	    const speed = this.bodies[ibody].velocity.getMag();
 	    kineticEnergy += 0.5*this.bodies[ibody].mass*speed*speed;
 
 	    for (let jbody=0; jbody< this.N; jbody++) {
-		if(ibody === jbody){
+          if (ibody === jbody) {
 		    continue;
-		}
-		separation = this.bodies[ibody].position.subtract(this.bodies[jbody].position).getMag();
-		potentialEnergy += separation >0.0 ? this.G*this.bodies[ibody].mass*this.bodies[jbody].mass/separation : 0.0;
-		
+          }
+          separation = this.bodies[ibody].position.subtract(this.bodies[jbody].position).getMag();
+          potentialEnergy += separation >0.0 ? this.G*this.bodies[ibody].mass*this.bodies[jbody].mass/separation : 0.0;
 	    }
-	}
+      }
 
-	if(this.totalEnergy == undefined)
-	{
+      if (this.totalEnergy == undefined)
+      {
 	    this.initialEnergy = kineticEnergy-potentialEnergy;
-	}
-	this.totalEnergy = kineticEnergy - potentialEnergy;
+      }
+      this.totalEnergy = kineticEnergy - potentialEnergy;
 
-	if(this.initialEnergy !== undefined)
-	{
+      if (this.initialEnergy !== undefined)
+      {
 	    this.dE = 100*(this.totalEnergy-this.initialEnergy)/this.initialEnergy;
-	}
-};
+      }
+    };
 
 NBodySystem.prototype.addBody = function addBody(body) {
   this.bodies.push(body);
@@ -145,121 +138,108 @@ NBodySystem.prototype.addBody = function addBody(body) {
 };
 
 
-NBodySystem.prototype.changeFrame = function changeFrame(framePosition,frameVelocity) {
-
-    for (let ibody=0; ibody< this.N; ibody++)
-    {
-
-	this.bodies[ibody].position = this.bodies[ibody].position.subtract(framePosition);
-	this.bodies[ibody].velocity = this.bodies[ibody].velocity.subtract(frameVelocity);
-    
-    }
-}
+NBodySystem.prototype.changeFrame = function changeFrame(framePosition, frameVelocity) {
+  for (let ibody=0; ibody< this.N; ibody++)
+  {
+    this.bodies[ibody].position = this.bodies[ibody].position.subtract(framePosition);
+    this.bodies[ibody].velocity = this.bodies[ibody].velocity.subtract(frameVelocity);
+  }
+};
 
 NBodySystem.prototype.changeToCOMFrame = function changeToCOMFrame() {
+  this.changeFrame(this.positionCOM, this.velocityCOM);
+};
 
-	this.changeFrame(this.positionCOM, this.velocityCOM);
-}
-    
 
 NBodySystem.prototype.setupOrbits =
 function setupOrbits() {
 };
 
 
-
 NBodySystem.prototype.calcTotalAngularMomentum =
     function calcTotalAngularMomentum() {
-
-	this.angmom.setZero();
-	for(let ibody=0; ibody < this.N; ibody++) {
-	    this.bodies[ibody].calcOrbitalAngularMomentum();
-	    this.angmom.add1(this.bodies[ibody].angmom);
-	}
-};
+      this.angmom.setZero();
+      for (let ibody=0; ibody < this.N; ibody++) {
+        this.bodies[ibody].calcOrbitalAngularMomentum();
+        this.angmom.add1(this.bodies[ibody].angmom);
+      }
+    };
 
 NBodySystem.prototype.calcTimestep =
     function calcTimestep(dtmax = 1.0e30) {
-
-	dtmin = 1.0e30;
-	for (let ibody=0; ibody < this.N; ibody++) {
+      dtmin = 1.0e30;
+      for (let ibody=0; ibody < this.N; ibody++) {
 	    this.bodies[ibody].calcTimestep(this.timestepTolerance);
-	    if(this.bodies[ibody].timestep < dtmin) {
-		dtmin = this.bodies[ibody].timestep;
+	    if (this.bodies[ibody].timestep < dtmin) {
+          dtmin = this.bodies[ibody].timestep;
 	    }
-	}
-	if(dtmin > dtmax) dtmin = dtmax;
-	this.timestep = dtmin;
-};
+      }
+      if (dtmin > dtmax) dtmin = dtmax;
+      this.timestep = dtmin;
+    };
 
 NBodySystem.prototype.calcForces =
     function calcForces(bodyList) {
+      const NBodies = bodyList.length;
 
-	let NBodies = bodyList.length;
-
-	for (let i=0; i< NBodies; i++) {
-	    
+      for (let i=0; i< NBodies; i++) {
 	    bodyList[i].acceleration.setZero();
 	    bodyList[i].jerk.setZero();
 	    bodyList[i].snap.setZero();
 	    bodyList[i].crackle.setZero();
-        
+
 
 	    bodyList[i].calcAccelJerk(this.G, bodyList, this.softeningLength);
 	    bodyList[i].calcSnapCrackle(this.G, bodyList, this.softeningLength);
-        
-	}
-    }
+      }
+    };
 
 
 NBodySystem.prototype.evolveSystem =
     function evolveSystem() {
-	/* Author: dh4gan
-	 * This method updates the positions of the bodies via 
+      /* Author: dh4gan
+	 * This method updates the positions of the bodies via
 	 * a 4th order Hermite integration (via a predictor-corrector algorithm)
 	 */
 
-	let dtmax = 0.5 * this.frameRate;
-	/* i.  Calculate initial accelerations, jerks, snaps and crackles */
-	this.calcForces(this.bodies);
+      const dtmax = 0.5 * this.frameRate;
+      /* i.  Calculate initial accelerations, jerks, snaps and crackles */
+      this.calcForces(this.bodies);
 
-	/* ii. Calculate initial global timestep */
-	this.calcTimestep(dtmax);
-	this.calcTotalEnergy();
-	this.calcTotalAngularMomentum();
-    
-	
+      /* ii. Calculate initial global timestep */
+      this.calcTimestep(dtmax);
+      this.calcTotalEnergy();
+      this.calcTotalAngularMomentum();
 
-	let tend = this.time + this.frameRate;
-	
-	while (this.time < tend)
-	{
-	    let t2 = this.timestep * this.timestep;
-	    let t3 = this.timestep * t2;
-	    
-    /* iii. Perform the prediction step */
-        
+
+      const tend = this.time + this.frameRate;
+
+      while (this.time < tend)
+      {
+	    const t2 = this.timestep * this.timestep;
+	    const t3 = this.timestep * t2;
+
+        /* iii. Perform the prediction step */
+
         // Arrays to store old co-ordinates
-        let pos_old = [];
-        let vel_old = [];
-        let acc_old = [];
-        let jerk_old = [];
-	/* Calculate predicted positions and velocities */
-	for (let i = 0; i < this.N; i++)
+        const pos_old = [];
+        const vel_old = [];
+        const acc_old = [];
+        const jerk_old = [];
+        /* Calculate predicted positions and velocities */
+        for (let i = 0; i < this.N; i++)
 	    {
-        
-            
-        // Store old velocity, acceleration and jerk
-            pos_old.push(cloneVector(this.bodies[i].position));
-            vel_old.push(cloneVector(this.bodies[i].velocity));
-            acc_old.push(cloneVector(this.bodies[i].acceleration));
-            jerk_old.push(cloneVector(this.bodies[i].jerk));
-            
+          // Store old velocity, acceleration and jerk
+          pos_old.push(cloneVector(this.bodies[i].position));
+          vel_old.push(cloneVector(this.bodies[i].velocity));
+          acc_old.push(cloneVector(this.bodies[i].acceleration));
+          jerk_old.push(cloneVector(this.bodies[i].jerk));
+
 	    // Pull the body object's data //
-	    let pos = this.bodies[i].position;
-	    let vel = this.bodies[i].velocity;
-	    let acc = this.bodies[i].acceleration;
-	    let jerk = this.bodies[i].jerk;
+	    const pos = this.bodies[i].position;
+	    const vel = this.bodies[i].velocity;
+	    const acc = this.bodies[i].acceleration;
+	    const jerk = this.bodies[i].jerk;
 
 
 	    // Calculate predicted position and velocity //
@@ -268,9 +248,8 @@ NBodySystem.prototype.evolveSystem =
 
 	    this.bodies[i].velocity = vel.add2(acc.scale(this.timestep), jerk.scale(
 		    0.5 * t2));
-
 	    }
-        
+
 
 	    /* iv. Use predicted positions and velocities to calculate
 	     * predicted accelerations, jerks, snaps and crackles */
@@ -280,86 +259,75 @@ NBodySystem.prototype.evolveSystem =
         /* v. Perform the correction step */
 	    for (let i = 0; i < this.N; i++)
 	    {
+          const pos = this.bodies[i].position;
+          const vel = this.bodies[i].velocity;
+          const acc = this.bodies[i].acceleration;
+          const jerk = this.bodies[i].jerk;
 
-		let pos = this.bodies[i].position;
-		let vel = this.bodies[i].velocity;
-		let acc = this.bodies[i].acceleration;
-		let jerk = this.bodies[i].jerk;
+          let accterm = this.bodies[i].acceleration.add1(acc_old[i]).scale(0.5 * this.timestep);
 
-		let accterm = this.bodies[i].acceleration.add1(acc_old[i]).scale(0.5 * this.timestep);
+          const jerkterm = this.bodies[i].jerk.relativeVector(jerk_old[i]).scale(t2/ 12.0);
 
-		let jerkterm = this.bodies[i].jerk.relativeVector(jerk_old[i]).scale(t2/ 12.0);
+          this.bodies[i].velocity = vel_old[i].add2(accterm, jerkterm);
 
-		this.bodies[i].velocity = vel_old[i].add2(accterm, jerkterm);
-
-		accterm = this.bodies[i].acceleration.relativeVector(acc_old[i]).scale(t2 / 12.0);
-		let velterm = vel_old[i].add1(vel).scale(0.5 * this.timestep);
-		this.bodies[i].position = pos_old[i].add2(velterm, accterm);
-		
+          accterm = this.bodies[i].acceleration.relativeVector(acc_old[i]).scale(t2 / 12.0);
+          const velterm = vel_old[i].add1(vel).scale(0.5 * this.timestep);
+          this.bodies[i].position = pos_old[i].add2(velterm, accterm);
 	    }
-	
-            this.calcForces(this.bodies);
-        
+
+        this.calcForces(this.bodies);
+
 
 	    this.time = this.time + this.timestep;
 	    this.calcTimestep(dtmax);
 	    this.calcTotalEnergy();
 	    this.calcTotalAngularMomentum();
-
-	}
+      }
     };
 
 NBodySystem.prototype.drawSystem =
 function drawSystem() {
-    
-  
-    var canvas = document.getElementById(this.canvasID);
-    var context = canvas.getContext('2d');
-    context.clearRect(0,0,canvas.width, canvas.height);
+  const canvas = document.getElementById(this.canvasID);
+  const context = canvas.getContext('2d');
+  context.clearRect(0, 0, canvas.width, canvas.height);
 
-     this.evolveSystem();
-    
+  this.evolveSystem();
+
   for (let ibody = 0; ibody < this.N; ibody++) {
-      
-      if(this.bodies[ibody].a > 1.0e-5)
-      {
+    if (this.bodies[ibody].a > 1.0e-5)
+    {
 	  this.bodies[ibody].calcOrbitFromVector(this.G, this.totalMass);
-	  
-    this.bodies[ibody].drawOrbit(this.G, this.totalMass,
-        this.nOrbitPoints, this.canvasID, this.pixscale);
-      }
+
+      this.bodies[ibody].drawOrbit(this.G, this.totalMass,
+          this.nOrbitPoints, this.canvasID, this.pixscale);
+    }
     this.bodies[ibody].draw2D(this.canvasID, this.pixscale);
 
-      let bodyElementId = "Body"+(ibody+1);
-      document.getElementById(bodyElementId).innerHTML = bodyElementId+this.bodies[ibody].printOrbit()+ "<br>"+this.bodies[ibody].printVectors();
-
-      
+    const bodyElementId = 'Body'+(ibody+1);
+    document.getElementById(bodyElementId).innerHTML = bodyElementId+this.bodies[ibody].printOrbit()+ '<br>'+this.bodies[ibody].printVectors();
   }
 
-    document.getElementById("time").innerHTML = "Time = "+this.time.toPrecision(4).toString() + "<br>Energy= "+this.totalEnergy.toPrecision(4).toString() + "<br> dE = "+this.dE.toPrecision(4).toString()+"%";
+  document.getElementById('time').innerHTML = 'Time = '+this.time.toPrecision(4).toString() + '<br>Energy= '+this.totalEnergy.toPrecision(4).toString() + '<br> dE = '+this.dE.toPrecision(4).toString()+'%';
 };
 
 NBodySystem.prototype.Run =
     function Run(milliseconds=1000)
-{
+    {
+      this.calcCOM();
+      this.changeToCOMFrame();
 
-    this.calcCOM();
-    this.changeToCOMFrame();
- 
-    var interval = setInterval(this.drawSystem.bind(this),milliseconds);
-
-}
+      const interval = setInterval(this.drawSystem.bind(this), milliseconds);
+    };
 
 /**
  * Quick method to setup a test NBodySystem
  */
 function testSystem() {
-  
   const system = new NBodySystem();
   system.calcTotalMass();
-    
-    system.time = 0.0;
- 
+
+  system.time = 0.0;
+
   system.addBody(new Body(1.0, 10.0, 'yellow',
       new Vector(0.0, 0.0, 0.0), new Vector(0.0, 0.0, 0.0)));
 
@@ -368,17 +336,14 @@ function testSystem() {
 
   system.addBody(createBodyFromOrbit(0.001, 10.0, 'blue', system.G,
       system.totalMass+0.002, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
-    
-    system.frameRate = 0.01
 
-    return system;
-    
+  system.frameRate = 0.01;
+
+  return system;
 };
 
 
-
-
-var system = testSystem();
+const system = testSystem();
 
 system.Run(30);
 

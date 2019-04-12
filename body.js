@@ -1,4 +1,3 @@
-/* eslint linebreak-style: ["error", "windows"] */
 /* vector.js
  *  Written 05-March-2018 by dh4gan
  *
@@ -106,15 +105,8 @@ function Body(mass, size, colour, position, velocity) {
 
 // Body methods
 
-
-Body.prototype.clone = function clone() {
-  //return new Body(this.mass, this.size, this.colour,
-    //    this.position, this.velocity);
-    return Object.create(this);
-};
-
-function precise(x,sigfig=3) {
-    return Number.parseFloat(x).toPrecision(4);
+function precise(x, sigfig=3) {
+  return Number.parseFloat(x).toPrecision(4);
 }
 
 Body.prototype.print = function print() {
@@ -122,19 +114,20 @@ Body.prototype.print = function print() {
 };
 
 Body.prototype.printOrbit = function printOrbit() {
-    
-    let orbitString = "(a,e,i,argper,longascend,trueanom) = ("+precise(this.a) + "  "+ precise(this.e) + "  "+ precise(this.i)+ "  "+ precise(this.argper) + "  "+ precise(this.longascend) + "  "+ precise(this.trueanom)+")";
-    return orbitString
-}
+  const orbitString = '(a,e,i,argper,longascend,trueanom) = ('+
+   precise(this.a) + '  '+ precise(this.e) + '  '+ precise(this.i)+ '  ' +
+   precise(this.argper) + '  '+ precise(this.longascend) +
+   '  ' + precise(this.trueanom)+')';
+  return orbitString;
+};
 
 Body.prototype.printVectors = function printVectors() {
-    
-    let vectorString = "<br>Position: "+this.position.toString()+
-    "<br>Velocity:"+this.velocity.toString()+
-    "<br>Acceleration:"+this.acceleration.toString()+
-    "<br>Jerk:"+this.jerk.toString();
-    return vectorString
-}
+  const vectorString = '<br>Position: '+this.position.toString()+
+    '<br>Velocity:'+this.velocity.toString()+
+    '<br>Acceleration:'+this.acceleration.toString()+
+    '<br>Jerk:'+this.jerk.toString();
+  return vectorString;
+};
 
 
 // Calculate orbital angular momentum of body
@@ -241,23 +234,22 @@ function calcOrbitFromVector(G, totalmass) {
     if (ndotV > 0.0) {
       this.trueanom = 2.0 * Math.PI - this.trueanom;
     }
-  }
-    else {
+  } else {
     // For non-circular orbits use the eccentricity vector
-      edotR = this.eccvec.dot(this.position);
-      edotR /= (magpos * this.e);
+    edotR = this.eccvec.dot(this.position);
+    edotR /= (magpos * this.e);
 
-      rdotV = this.velocity.dot(this.position);
+    rdotV = this.velocity.dot(this.position);
 
     edotR = edotR>1.0 ? 1.0 : edotR < -1.0 ? -1.0 : edotR;
-      this.trueanom = Math.acos(edotR);
+    this.trueanom = Math.acos(edotR);
 
-        
-      if (rdotV < 0.0) {
-        this.trueanom = 2.0 * Math.PI - this.trueanom;
-      }
+
+    if (rdotV < 0.0) {
+      this.trueanom = 2.0 * Math.PI - this.trueanom;
     }
-  
+  }
+
   // Finally, calculate the longitude of periapsis
   // First calculate the argument of periapsis
 
@@ -280,15 +272,17 @@ function calcOrbitFromVector(G, totalmass) {
 // Given orbital parameters, computes position and velocity of body
 // We need a static version of this method for drawing orbits
 
-calcPositionVelocityFromOrbit = function calcPositionVelocityFromOrbit(G, totalmass, a,e,i, argper, longascend, trueanom) {
+calcPositionVelocityFromOrbit =
+function calcPositionVelocityFromOrbit(G, totalmass,
+    a, e, i, argper, longascend, trueanom) {
   /* 1. calculate distance from CoM using semimajor axis,
 eccentricity and true anomaly */
 
   const magpos = a * (1.0 - e * e) /
 (1.0 + e * Math.cos(trueanom));
 
-    var position = new Vector();
-    var velocity = new Vector();
+  const position = new Vector();
+  const velocity = new Vector();
   /* 2. Calculate position vector in orbital plane */
 
   position.x = magpos * Math.cos(trueanom);
@@ -331,19 +325,20 @@ eccentricity and true anomaly */
     position.rotateZ(-1 * longascend);
     velocity.rotateZ(-1 * longascend);
   }
-    
-    return [position,velocity]
+
+  return [position, velocity];
 };
 
 
-Body.prototype.calcVectorFromOrbit = function calcVectorFromOrbit(G, totalmass) {
-    
-    var self=this;
-    var positionVelocity = calcPositionVelocityFromOrbit(G, totalmass, self.a,self.e,self.i, self.argper,self.longascend,self.trueanom);
-    this.position = positionVelocity[0];
-    this.velocity = positionVelocity[1];
-    
-}
+Body.prototype.calcVectorFromOrbit =
+function calcVectorFromOrbit(G, totalmass) {
+  const self=this;
+  const positionVelocity = calcPositionVelocityFromOrbit(G, totalmass,
+      self.a, self.e, self.i,
+      self.argper, self.longascend, self.trueanom);
+  this.position = positionVelocity[0];
+  this.velocity = positionVelocity[1];
+};
 
 
 // Returns the orbital period of the body
@@ -403,38 +398,33 @@ Body.prototype.draw2D = function draw2D(canvasID, pixscale) {
 // Draws an ellipse corresponding to a given orbit
 Body.prototype.drawOrbit = function drawOrbit(G, totalmass,
     npoints, canvasID, pixscale) {
-  
-    self=this;
-    
-    const canvas = document.getElementById(canvasID);
-    const context = canvas.getContext('2d');
-    
-  if (self.a >0.0) {
-    const dphi = 2.0 * Math.PI / npoints;
+  self=this;
 
+  const canvas = document.getElementById(canvasID);
+  const context = canvas.getContext('2d');
+
+  if (self.a >0.0) {
+    const minoraxis = this.a*Math.sqrt((1.0-this.e*this.e));
+    const focusDistance = Math.sqrt(this.a*this.a - minoraxis*minoraxis);
+
+    const focusX = canvas.width / 2 -
+    focusDistance*pixscale*Math.cos(2.0*Math.PI - this.argper);
+
+    const focusY = canvas.height / 2 -
+    focusDistance*pixscale*Math.sin(2.0*Math.PI - this.argper);
+
+    context.beginPath();
+    context.strokeStyle = this.colour;
+    context.linewidth = 0.01;
+
+    context.ellipse(focusX, focusY,
+        this.a*pixscale, minoraxis*pixscale, this.argper, 0.0, 2.0 * Math.PI);
+    context.stroke();
+  } else {
+    // If orbit open, use the multiple point draw
+    const dphi = 2.0 * Math.PI / npoints;
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
-      
-    let minoraxis = this.a*Math.sqrt((1.0-this.e*this.e));
-    
-    let focus_distance = Math.sqrt(this.a*this.a - minoraxis*minoraxis);
-      
-    const focusX = canvas.width / 2  - focus_distance*pixscale*Math.cos(2.0*Math.PI - this.argper);
-    const focusY = canvas.height / 2 - focus_distance*pixscale*Math.sin(2.0*Math.PI - this.argper);
-
-    
-      
-      context.beginPath();
-      context.strokeStyle = this.colour;
-      context.linewidth = 0.01;
-      //context.setLineDash([2, 3]);
-      context.ellipse(focusX, focusY, this.a*pixscale, minoraxis*pixscale, this.argper, 0.0, 2.0 * Math.PI);
-      context.stroke();
-      
-  }
-    // If orbit open, use the multiple point draw
-    else
-    {
     let offSetX = centerX + self.position.x;
     let offSetY = centerY + self.position.y;
 
@@ -444,11 +434,13 @@ Body.prototype.drawOrbit = function drawOrbit(G, totalmass,
     context.linewidth = 0.5;
     context.setLineDash([2, 3]);
 
-      let nu = 0.0;
+    let nu = 0.0;
     for (i = 0; i < npoints; i++) {
-        nu +=dphi;
+      nu +=dphi;
 
-      var positionVelocity = calcPositionVelocityFromOrbit(G, totalmass, self.a,self.e,self.i,self.argper,self.longascend,nu);
+      const positionVelocity = calcPositionVelocityFromOrbit(G, totalmass,
+          self.a, self.e, self.i,
+          self.argper, self.longascend, nu);
 
       offSetX = centerX + pixscale * (positionVelocity[0].x);
       offSetY = centerY + pixscale * (positionVelocity[0].y);
@@ -456,9 +448,9 @@ Body.prototype.drawOrbit = function drawOrbit(G, totalmass,
       context.stroke();
       context.moveTo(offSetX, offSetY);
     }
-    }
-    
-    context.globalAlpha=1.0;
+  }
+
+  context.globalAlpha=1.0;
 };
 
 
@@ -696,8 +688,8 @@ Body.prototype.calcTimestep = function calcTimestep(greekEta) {
 
   if (normA * normS + normJ * normJ < tolerance) {
     console.log('warning in calcTimestep: numerator zero for '+this.name);
-      console.log(normJ, normA, normS, tolerance);
-      this.position.print();
+    console.log(normJ, normA, normS, tolerance);
+    this.position.print();
     console.log(this.position.getMag() + '  ' + this.velocity.getMag());
     this.timestep = 0.0;
   } else if (normC * normJ + normS * normS < tolerance) {

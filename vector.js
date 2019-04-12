@@ -1,4 +1,3 @@
-/* eslint linebreak-style: ["error", "windows"] */
 /* vector.js
  *  Written 05-March-2018 by dh4gan
  *
@@ -65,21 +64,22 @@ function Vector(x=0.0, y=0.0, z=0.0) {
  */
 
 function cloneVector(v) {
-    return new Vector(v.x,v.y,v.z);
-}
+  return new Vector(v.x, v.y, v.z);
+};
 
-function precise(x,sigfig=3) {
-  return Number.parseFloat(x).toPrecision(4);
-}
+function precise(x, sigfig=3) {
+  return Number.parseFloat(x).toPrecision(sigfig);
+};
 
 // Return a vector string
 Vector.prototype.toString = function toString(sigfig=3) {
-    return '('+precise(this.x,sigfig)+', '+precise(this.y,sigfig)+', '+precise(this.z,sigfig)+'), magnitude: '+precise(this.mag,sigfig);
-}
+  return '('+precise(this.x, sigfig)+', '+precise(this.y, sigfig)+
+  ', '+precise(this.z, sigfig)+'), magnitude: '+precise(this.mag, sigfig);
+};
 
 // Print the vector to the console
 Vector.prototype.print = function print() {
-    console.log(this.toString());
+  console.log(this.toString());
 };
 
 // Compute vector magnitude
@@ -94,12 +94,12 @@ Vector.prototype.add1 = function add1(u) {
 };
 
 // Add vector this + u + v
-Vector.prototype.add2 = function add2(u,v) {
+Vector.prototype.add2 = function add2(u, v) {
   return new Vector(this.x + u.x + v.x, this.y + u.y + v.y, this.z + u.z + v.z);
 };
 
 // Add vector this + u + v + q
-Vector.prototype.add3 = function add3(u,v,q) {
+Vector.prototype.add3 = function add3(u, v, q) {
   return new Vector(this.x + u.x + v.x + q.x, this.y + u.y + v.y + q.y, this.z + u.z + v.z + q.z);
 };
 
