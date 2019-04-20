@@ -105,8 +105,14 @@ function Body(mass, size, colour, position, velocity) {
 
 // Body methods
 
+/**
+* Converts a number to a string
+* @param {number} x - number to convert
+* @param {number} sigfig - number of significant figures
+* @return {string} - string of x, to sigfig significant figures
+*/
 function precise(x, sigfig=3) {
-  return Number.parseFloat(x).toPrecision(4);
+  return Number.parseFloat(x).toPrecision(sigfig);
 }
 
 Body.prototype.print = function print() {
