@@ -55,13 +55,14 @@
  */
 function NBodySystem(timestep = 0.001, G = 1.0,
     softeningLength = 1.0e-5, bodies = []) {
+  this.time = 0.0;
   this.timestep = timestep;
   this.G = G;
   this.softeningLength = softeningLength;
   this.bodies = bodies;
   this.N = bodies.length;
 
-  this.frameRate = 0.0001;
+  this.frameRate = 0.1;
 
   this.angmom = new Vector();
   this.positionCOM = new Vector();
@@ -186,7 +187,6 @@ function setupOrbits() {
   this.changeToCOMFrame();
   this.calcTotalAngularMomentum();
   this.calcTotalEnergy();
-
 };
 
 
@@ -343,7 +343,6 @@ function drawSystem() {
       '<br>'+this.bodies[ibody].printVectors();
   }
 
-  document.getElementById('COM').innerHTML = 'Centre of Mass: '+this.positionCOM.toString();
   document.getElementById('time').innerHTML =
   'Time = '+this.time.toPrecision(4).toString() +
   '<br>Energy= '+this.totalEnergy.toPrecision(4).toString() +
@@ -363,18 +362,12 @@ NBodySystem.prototype.run =
  */
 function testSystem() {
   const system = new NBodySystem();
-  
-  system.time = 0.0;
-
   system.addBody(new Body(1.0, 10.0, 'yellow',
       new Vector(0.0, 0.0, 0.0), new Vector(0.0, 0.0, 0.0)));
-
   system.addBodyByOrbit(0.001, 10.0, 'green', 1.0, 0.1, 0.0, 1.7, 0.0);
   system.addBodyByOrbit(0.001, 10.0, 'blue', 2.0, 0.05, 0.0, 0.0, 0.0);
 
   system.setupOrbits();
-
-  system.frameRate = 0.01;
 
   return system;
 };
