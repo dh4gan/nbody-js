@@ -146,7 +146,7 @@ function addBody(body) {
 NBodySystem.prototype.addBodyByOrbit =
 function addBodyByOrbit(mass, size, colour,
     semimajorAxis, eccentricity, inclination,
-    longitudeAscendingNode, trueAnomaly) {
+    longitudeAscendingNode, trueAnomaly, parentBody=null) {
   const position = new Vector();
   const velocity = new Vector();
   const newBody = new Body(mass, size, colour, position, velocity);
@@ -156,6 +156,7 @@ function addBodyByOrbit(mass, size, colour,
   newBody.i = inclination;
   newBody.longascend = longitudeAscendingNode;
   newBody.trueanom = trueAnomaly;
+  newBody.parentBody = parentBody;
 
   this.addBody(newBody);
 };
@@ -164,11 +165,7 @@ function addBodyByOrbit(mass, size, colour,
 NBodySystem.prototype.changeFrame =
 function changeFrame(framePosition, frameVelocity) {
   for (let ibody=0; ibody< this.N; ibody++) {
-    this.bodies[ibody].position =
-      this.bodies[ibody].position.subtract(framePosition);
-
-    this.bodies[ibody].velocity =
-      this.bodies[ibody].velocity.subtract(frameVelocity);
+    this.bodies[ibody].changeFrame(framePosition, frameVelocity);
   }
 };
 
@@ -183,6 +180,7 @@ function setupOrbits() {
   for (let ibody =0; ibody < this.N; ibody++) {
     this.bodies[ibody].calcVectorFromOrbit(this.G, this.totalMass);
   }
+
 
   this.changeToCOMFrame();
   this.calcTotalAngularMomentum();
@@ -330,7 +328,7 @@ function drawSystem() {
 
   for (let ibody = 0; ibody < this.N; ibody++) {
     if (this.bodies[ibody].a > 1.0e-5) {
-      this.bodies[ibody].calcOrbitFromVector(this.G, this.totalMass);
+      this.bodies[ibody].calcOrbitFromVector(this.G, this.totalMass, this.bodies[ibody].parentBody);
 
       this.bodies[ibody].drawOrbit(this.G, this.totalMass,
           this.nOrbitPoints, this.canvasID, this.pixscale);
@@ -365,7 +363,7 @@ function testSystem() {
   system.addBody(new Body(1.0, 10.0, 'yellow',
       new Vector(0.0, 0.0, 0.0), new Vector(0.0, 0.0, 0.0)));
   system.addBodyByOrbit(0.001, 10.0, 'green', 1.0, 0.1, 0.0, 1.7, 0.0);
-  system.addBodyByOrbit(0.001, 10.0, 'blue', 2.0, 0.05, 0.0, 0.0, 0.0);
+  system.addBodyByOrbit(0.00001, 10.0, 'blue', 0.005, 0.0, 0.0, 0.0, 0.0, system.bodies[1]);
 
   system.setupOrbits();
 
@@ -374,5 +372,5 @@ function testSystem() {
 
 const system = testSystem();
 
-system.run(30);
+system.run(300);
 

@@ -101,6 +101,8 @@ function Body(mass, size, colour, position, velocity) {
 
   this.angmom = new Vector(0.0, 0.0, 0.0);
   this.eccvec = new Vector(0.0, 0.0, 0.0);
+
+  this.parentBody = null;
 }
 
 // Body methods
@@ -142,6 +144,11 @@ function calcOrbitalAngularMomentum() {
   this.angmom = this.position.cross(this.velocity);
 };
 
+Body.prototype.changeFrame =
+function changeFrame(position, velocity) {
+  this.position = this.position.subtract(position);
+  this.velocity = this.velocity.subtract(velocity);
+};
 
 // Calculate orbital eccentricity vector
 // (assumes orbital angular momentum up to date)
@@ -156,9 +163,8 @@ Body.prototype.calcEccentricity = function calcEccentricity(G, totalmass) {
     this.eccvec.setZero();
   } else {
     this.eccvec = this.position.scale(magvel *
-      magvel).subtract(this.velocity.scale(vdotr / gravparam));
-
-    this.eccvec = this.eccvec.subtract(this.position.scale(1.0 / magpos));
+      magvel/gravparam - 1.0/magpos)
+      .subtract(this.velocity.scale(vdotr / gravparam));
   }
 
   this.e = this.eccvec.getMag();
@@ -168,9 +174,15 @@ Body.prototype.calcEccentricity = function calcEccentricity(G, totalmass) {
 // Calculates orbital parameters from input position and velocity
 
 Body.prototype.calcOrbitFromVector =
-function calcOrbitFromVector(G, totalmass) {
+function calcOrbitFromVector(G, totalmass, parentBody=null) {
+  let hostMass = totalmass;
+  if (parentBody) {
+    this.changeFrame(parentBody.position, parentBody.velocity);
+    hostMass = parentBody.mass;
+  }
+
   this.calcOrbitalAngularMomentum();
-  this.calcEccentricity(G, totalmass);
+  this.calcEccentricity(G, hostMass);
 
   const angmag = this.angmom.getMag();
   const nplane = new Vector(0.0, 0.0, 0.0);
@@ -179,7 +191,7 @@ function calcOrbitFromVector(G, totalmass) {
 
   // Compute semimajor axis
 
-  this.a = angmag * angmag / (G * totalmass * (1.0 - this.e * this.e));
+  this.a = angmag * angmag / (G * hostMass * (1.0 - this.e * this.e));
 
   // Compute inclination
 
@@ -273,6 +285,10 @@ function calcOrbitFromVector(G, totalmass) {
     this.argper = 0.0;
     this.longper = 0.0;
   }
+
+  if (parentBody) {
+    this.changeFrame(parentBody.position.scale(-1), parentBody.velocity.scale(-1));
+  }
 };
 
 // Given orbital parameters, computes position and velocity of body
@@ -339,11 +355,21 @@ eccentricity and true anomaly */
 Body.prototype.calcVectorFromOrbit =
 function calcVectorFromOrbit(G, totalmass) {
   const self=this;
-  const positionVelocity = calcPositionVelocityFromOrbit(G, totalmass,
+
+  let hostMass = totalmass;
+  if (this.parentBody) {
+    hostMass = this.parentBody.mass;
+  }
+
+  const positionVelocity = calcPositionVelocityFromOrbit(G, hostMass,
       self.a, self.e, self.i,
       self.argper, self.longascend, self.trueanom);
   this.position = positionVelocity[0];
   this.velocity = positionVelocity[1];
+
+  if (this.parentBody) {
+    this.changeFrame(this.parentBody.position.scale(-1), this.parentBody.velocity.scale(-1));
+  }
 };
 
 
@@ -413,11 +439,16 @@ Body.prototype.drawOrbit = function drawOrbit(G, totalmass,
     const minoraxis = this.a*Math.sqrt((1.0-this.e*this.e));
     const focusDistance = Math.sqrt(this.a*this.a - minoraxis*minoraxis);
 
-    const focusX = canvas.width / 2 -
+    let focusX = canvas.width / 2 -
     focusDistance*pixscale*Math.cos(2.0*Math.PI - this.argper);
 
-    const focusY = canvas.height / 2 -
+    let focusY = canvas.height / 2 -
     focusDistance*pixscale*Math.sin(2.0*Math.PI - this.argper);
+
+    if (this.parentBody) {
+      focusX +=this.parentBody.position.x * pixscale;
+      focusY +=this.parentBody.position.y * pixscale;
+    }
 
     context.beginPath();
     context.strokeStyle = this.colour;
@@ -429,10 +460,16 @@ Body.prototype.drawOrbit = function drawOrbit(G, totalmass,
   } else {
     // If orbit open, use the multiple point draw
     const dphi = 2.0 * Math.PI / npoints;
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    let offSetX = centerX + self.position.x;
-    let offSetY = centerY + self.position.y;
+    let centerX = canvas.width / 2;
+    let centerY = canvas.height / 2;
+
+    if (this.parentBody) {
+      centerX +=this.parentBody.position.x * pixscale;
+      centerY +=this.parentBody.position.y * pixscale;
+    }
+
+    let offSetX = centerX + self.position.x * pixscale;
+    let offSetY = centerY + self.position.y * pixscale;
 
     context.moveTo(offSetX, offSetY);
     context.beginPath();
