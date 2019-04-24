@@ -61,7 +61,7 @@ function NBodySystem(timestep = 0.001, G = 1.0,
   this.bodies = bodies;
   this.N = bodies.length;
 
-  this.frameRate = 0.00000000001;
+  this.frameRate = 0.0001;
 
   this.angmom = new Vector();
   this.positionCOM = new Vector();
@@ -73,7 +73,7 @@ function NBodySystem(timestep = 0.001, G = 1.0,
   this.nOrbitPoints = 100; // Number of points for drawing orbits
   this.canvasID = 'myCanvas';
   this.pixscale = 100.0;
-  this.timestepTolerance = 0.00001;
+  this.timestepTolerance = 0.0001;
 }
 
 NBodySystem.prototype.calcTotalMass =
@@ -89,12 +89,12 @@ NBodySystem.prototype.calcCOM =
       this.positionCOM.setZero();
       this.velocityCOM.setZero();
 
-      if (this.totalmass > 0.0) {
+      if (this.totalMass > 0.0) {
         for (let ibody=0; ibody<this.N; ibody++) {
-          this.positionCOM = this.positionCOM.add(
+          this.positionCOM = this.positionCOM.add1(
               this.bodies[ibody].position.scale(this.bodies[ibody].mass));
 
-          this.velocityCOM = this.velocityCOM.add(
+          this.velocityCOM = this.velocityCOM.add1(
               this.bodies[ibody].velocity.scale(this.bodies[ibody].mass));
         }
 
@@ -125,7 +125,7 @@ NBodySystem.prototype.calcTotalEnergy =
       }
 
       if (this.totalEnergy == undefined) {
-        this.initialEnergy = kineticEnergy-potentialEnergy;
+        this.initialEnergy = kineticEnergy - potentialEnergy;
       }
       this.totalEnergy = kineticEnergy - potentialEnergy;
 
@@ -172,6 +172,7 @@ function changeFrame(framePosition, frameVelocity) {
 };
 
 NBodySystem.prototype.changeToCOMFrame = function changeToCOMFrame() {
+  this.calcCOM();
   this.changeFrame(this.positionCOM, this.velocityCOM);
 };
 
@@ -182,7 +183,7 @@ function setupOrbits() {
     this.bodies[ibody].calcVectorFromOrbit(this.G, this.totalMass);
   }
 
-  this.calcCOM();
+  this.changeToCOMFrame();
   this.calcTotalAngularMomentum();
   this.calcTotalEnergy();
 
@@ -325,6 +326,7 @@ function drawSystem() {
   context.clearRect(0, 0, canvas.width, canvas.height);
 
   this.evolveSystem();
+  this.changeToCOMFrame();
 
   for (let ibody = 0; ibody < this.N; ibody++) {
     if (this.bodies[ibody].a > 1.0e-5) {
@@ -341,6 +343,7 @@ function drawSystem() {
       '<br>'+this.bodies[ibody].printVectors();
   }
 
+  document.getElementById('COM').innerHTML = 'Centre of Mass: '+this.positionCOM.toString();
   document.getElementById('time').innerHTML =
   'Time = '+this.time.toPrecision(4).toString() +
   '<br>Energy= '+this.totalEnergy.toPrecision(4).toString() +
@@ -349,7 +352,6 @@ function drawSystem() {
 
 NBodySystem.prototype.run =
     function run(milliseconds=1000) {
-      this.calcCOM();
       this.changeToCOMFrame();
 
       setInterval(this.drawSystem.bind(this), milliseconds);
@@ -367,8 +369,8 @@ function testSystem() {
   system.addBody(new Body(1.0, 10.0, 'yellow',
       new Vector(0.0, 0.0, 0.0), new Vector(0.0, 0.0, 0.0)));
 
-  system.addBodyByOrbit(0.001, 10.0, 'green', 1.0, 0.3, 0.0, 1.7, 0.0);
-  //system.addBodyByOrbit(0.001, 10.0, 'blue', 2.0, 0.0, 0.0, 0.0, 0.0);
+  system.addBodyByOrbit(0.001, 10.0, 'green', 1.0, 0.1, 0.0, 1.7, 0.0);
+  system.addBodyByOrbit(0.001, 10.0, 'blue', 2.0, 0.05, 0.0, 0.0, 0.0);
 
   system.setupOrbits();
 
