@@ -142,6 +142,23 @@ function addBody(body) {
   this.calcCOM();
 };
 
+NBodySystem.prototype.addBodyByOrbit =
+function addBodyByOrbit(mass, size, colour,
+    semimajorAxis, eccentricity, inclination,
+    longitudeAscendingNode, trueAnomaly) {
+  const position = new Vector();
+  const velocity = new Vector();
+  const newBody = new Body(mass, size, colour, position, velocity);
+
+  newBody.a = semimajorAxis;
+  newBody.e = eccentricity;
+  newBody.i = inclination;
+  newBody.longascend = longitudeAscendingNode;
+  newBody.trueanom = trueAnomaly;
+
+  this.addBody(newBody);
+};
+
 
 NBodySystem.prototype.changeFrame =
 function changeFrame(framePosition, frameVelocity) {
@@ -161,6 +178,14 @@ NBodySystem.prototype.changeToCOMFrame = function changeToCOMFrame() {
 
 NBodySystem.prototype.setupOrbits =
 function setupOrbits() {
+  for (let ibody =0; ibody < this.N; ibody++) {
+    this.bodies[ibody].calcVectorFromOrbit(this.G, this.totalMass);
+  }
+
+  this.calcCOM();
+  this.calcTotalAngularMomentum();
+  this.calcTotalEnergy();
+
 };
 
 
@@ -336,24 +361,21 @@ NBodySystem.prototype.run =
  */
 function testSystem() {
   const system = new NBodySystem();
-  system.calcTotalMass();
-
+  
   system.time = 0.0;
 
   system.addBody(new Body(1.0, 10.0, 'yellow',
       new Vector(0.0, 0.0, 0.0), new Vector(0.0, 0.0, 0.0)));
 
-  system.addBody(createBodyFromOrbit(0.001, 10.0, 'green',
-      system.G, system.totalMass+0.001, 1.0, 0.3, 0.0, 0.0, 1.7, 0.0));
+  system.addBodyByOrbit(0.001, 10.0, 'green', 1.0, 0.3, 0.0, 1.7, 0.0);
+  //system.addBodyByOrbit(0.001, 10.0, 'blue', 2.0, 0.0, 0.0, 0.0, 0.0);
 
-  system.addBody(createBodyFromOrbit(0.001, 10.0, 'blue', system.G,
-      system.totalMass+0.002, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+  system.setupOrbits();
 
   system.frameRate = 0.01;
 
   return system;
 };
-
 
 const system = testSystem();
 
