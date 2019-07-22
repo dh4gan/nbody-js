@@ -327,8 +327,10 @@ function drawSystem() {
   this.changeToCOMFrame();
 
   for (let ibody = 0; ibody < this.N; ibody++) {
-    if (this.bodies[ibody].a > 1.0e-5) {
-      this.bodies[ibody].calcOrbitFromVector(this.G, this.totalMass, this.bodies[ibody].parentBody);
+    if (this.bodies[ibody].a > 1.0e-5 ||
+      this.bodies[ibody].position.mag > 1.0e-5) {
+      this.bodies[ibody].calcOrbitFromVector(this.G, this.totalMass,
+          this.bodies[ibody].parentBody);
 
       this.bodies[ibody].drawOrbit(this.G, this.totalMass,
           this.nOrbitPoints, this.canvasID, this.pixscale);
@@ -344,7 +346,8 @@ function drawSystem() {
   document.getElementById('time').innerHTML =
   'Time = '+this.time.toPrecision(4).toString() +
   '<br>Energy= '+this.totalEnergy.toPrecision(4).toString() +
-  '<br> dE = '+this.dE.toPrecision(4).toString()+'%';
+  '<br> dE = '+this.dE.toPrecision(4).toString()+'%' +
+  '<br> pixscale = '+this.pixscale;
 };
 
 NBodySystem.prototype.run =
@@ -352,7 +355,23 @@ NBodySystem.prototype.run =
       this.changeToCOMFrame();
 
       setInterval(this.drawSystem.bind(this), milliseconds);
+      document.onkeypress = this.zoomAndPan.bind(this);
     };
+
+
+NBodySystem.prototype.zoomAndPan = function zoomAndPan(e) {
+  if (e.keyCode == 13) {
+    console.log('You pressed enter');
+  }
+
+  if (e.code == 'KeyI') {
+    this.pixscale +=10;
+  }
+
+  if (e.code == 'KeyO' && this.pixscale >= 50) {
+    this.pixscale -=10;
+  }
+};
 
 /**
  * Quick method to setup a test NBodySystem
@@ -360,10 +379,12 @@ NBodySystem.prototype.run =
  */
 function testSystem() {
   const system = new NBodySystem();
-  system.addBody(new Body(1.0, 10.0, 'yellow',
-      new Vector(0.0, 0.0, 0.0), new Vector(0.0, 0.0, 0.0)));
-  system.addBodyByOrbit(0.001, 10.0, 'green', 1.0, 0.1, 0.0, 1.7, 0.0);
-  system.addBodyByOrbit(0.00001, 10.0, 'blue', 0.005, 0.0, 0.0, 0.0, 0.0, system.bodies[1]);
+  // system.addBody(new Body(1.0, 10.0, 'yellow',
+  //    new Vector(0.0, 0.0, 0.0), new Vector(0.0, 0.0, 0.0)));
+  system.addBodyByOrbit(0.5, 10.0, 'green', 0.0, 0.0, 0.0, 0.0, 0.0);
+  // system.addBodyByOrbit(0.1, 10.0, 'blue', 0.5, 0.0, 0.0, 0.0, 3.14);
+
+  system.addBodyByOrbit(0.001, 10.0, 'orange', 3.5, 0.0, 0.0, 0.0, 0.0);
 
   system.setupOrbits();
 
@@ -371,6 +392,5 @@ function testSystem() {
 };
 
 const system = testSystem();
-
-system.run(300);
+system.run(1000);
 

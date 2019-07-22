@@ -164,7 +164,7 @@ Body.prototype.calcEccentricity = function calcEccentricity(G, totalmass) {
   } else {
     this.eccvec = this.position.scale(magvel *
       magvel/gravparam - 1.0/magpos)
-      .subtract(this.velocity.scale(vdotr / gravparam));
+        .subtract(this.velocity.scale(vdotr / gravparam));
   }
 
   this.e = this.eccvec.getMag();
@@ -406,6 +406,7 @@ createBodyFromOrbit = function createBodyFromOrbit(mass, size, colour, G,
 Body.prototype.draw2D = function draw2D(canvasID, pixscale) {
   const canvas = document.getElementById(canvasID);
   const context = canvas.getContext('2d');
+
   const centerX = canvas.width / 2;
   const centerY = canvas.height / 2;
 
@@ -435,7 +436,7 @@ Body.prototype.drawOrbit = function drawOrbit(G, totalmass,
   const canvas = document.getElementById(canvasID);
   const context = canvas.getContext('2d');
 
-  if (self.a >0.0) {
+  if (self.a >0.0 || self.position.mag > 1.0e-5) {
     const minoraxis = this.a*Math.sqrt((1.0-this.e*this.e));
     const focusDistance = Math.sqrt(this.a*this.a - minoraxis*minoraxis);
 
