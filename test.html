@@ -2,20 +2,33 @@
 <meta charset="utf-8">
 <html>
     <head>
-    <title>N Body dynamics</title>
-     <h1>N Body dynamics</h1>
+            <!--<link rel="stylesheet" type = "text/css" href="test.css">-->
+            <!-- Latest compiled and minified CSS -->
+            <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+      
+            <!-- jQuery library -->
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+      
+            <!-- Latest compiled JavaScript -->
+            <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
+
+         
     </head>
     
-    <link rel="stylesheet" type = "text/css" href="test.css">
     
     <body>
+
+            <div class='jumbotron text-center'>
+                  <h1>N Body dynamics</h1>
+            </div>
     
-      <h2> Testing NBodySystem </h2>
 	<p id="time"> Time </p>
    
-	<canvas id="myCanvas" width = "800" height="600">
+	<canvas id="myCanvas" width = "800" height="600" style='display:block;margin-left:auto; margin-right:auto'>
 	</canvas>
 
+      <!--TODO these should be dynamically generated in the javascript-->
       <p id="Body1"> Body 1 </p>
       <p id="Body2"> Body 2 </p>
 <p id = "Body3"> Body 3 </p>
