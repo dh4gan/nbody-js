@@ -287,7 +287,8 @@ function calcOrbitFromVector(G, totalmass, parentBody=null) {
   }
 
   if (parentBody) {
-    this.changeFrame(parentBody.position.scale(-1), parentBody.velocity.scale(-1));
+    this.changeFrame(parentBody.position.scale(-1),
+        parentBody.velocity.scale(-1));
   }
 };
 
@@ -368,7 +369,8 @@ function calcVectorFromOrbit(G, totalmass) {
   this.velocity = positionVelocity[1];
 
   if (this.parentBody) {
-    this.changeFrame(this.parentBody.position.scale(-1), this.parentBody.velocity.scale(-1));
+    this.changeFrame(this.parentBody.position.scale(-1),
+        this.parentBody.velocity.scale(-1));
   }
 };
 
@@ -403,22 +405,19 @@ createBodyFromOrbit = function createBodyFromOrbit(mass, size, colour, G,
 };
 
 // Body drawing methods
-Body.prototype.draw2D = function draw2D(canvasID, pixscale) {
+Body.prototype.draw2D = function draw2D(canvasID, pixscale, centerX, centerY) {
   const canvas = document.getElementById(canvasID);
   const context = canvas.getContext('2d');
-
-  const centerX = canvas.width / 2;
-  const centerY = canvas.height / 2;
 
   const offSetX = centerX + pixscale*this.position.x;
   const offSetY = centerY + pixscale*this.position.y;
 
   context.beginPath();
-  context.arc(offSetX, offSetY, this.size,
+  context.arc(offSetX, offSetY, this.size*0.01*pixscale,
       0, 2 * Math.PI, false);
 
   const grad = context.createRadialGradient(
-      offSetX, offSetY, 0.0, offSetX, offSetY, this.size);
+      offSetX, offSetY, 0.0, offSetX, offSetY, this.size*0.01*pixscale);
 
   grad.addColorStop(0, this.colour);
   grad.addColorStop(1, 'white');
@@ -430,7 +429,7 @@ Body.prototype.draw2D = function draw2D(canvasID, pixscale) {
 
 // Draws an ellipse corresponding to a given orbit
 Body.prototype.drawOrbit = function drawOrbit(G, totalmass,
-    npoints, canvasID, pixscale) {
+    npoints, canvasID, pixscale, centerX, centerY) {
   self=this;
 
   const canvas = document.getElementById(canvasID);
@@ -440,10 +439,10 @@ Body.prototype.drawOrbit = function drawOrbit(G, totalmass,
     const minoraxis = this.a*Math.sqrt((1.0-this.e*this.e));
     const focusDistance = Math.sqrt(this.a*this.a - minoraxis*minoraxis);
 
-    let focusX = canvas.width / 2 -
+    let focusX = centerX  -
     focusDistance*pixscale*Math.cos(2.0*Math.PI - this.argper);
 
-    let focusY = canvas.height / 2 -
+    let focusY = centerY -
     focusDistance*pixscale*Math.sin(2.0*Math.PI - this.argper);
 
     if (this.parentBody) {
@@ -461,8 +460,8 @@ Body.prototype.drawOrbit = function drawOrbit(G, totalmass,
   } else {
     // If orbit open, use the multiple point draw
     const dphi = 2.0 * Math.PI / npoints;
-    let centerX = canvas.width / 2;
-    let centerY = canvas.height / 2;
+    //let centerX = canvas.width / 2;
+    //let centerY = canvas.height / 2;
 
     if (this.parentBody) {
       centerX +=this.parentBody.position.x * pixscale;

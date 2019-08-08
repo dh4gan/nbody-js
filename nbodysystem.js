@@ -73,7 +73,10 @@ function NBodySystem(timestep = 0.001, G = 1.0,
 
   this.nOrbitPoints = 100; // Number of points for drawing orbits
   this.canvasID = 'myCanvas';
+  this.canvas = document.getElementById(this.canvasID);
   this.pixscale = 100.0;
+  this.centerX = this.canvas.width/2;
+  this.centerY = this.canvas.height/2;
   this.timestepTolerance = 0.0001;
 }
 
@@ -333,9 +336,10 @@ function drawSystem() {
           this.bodies[ibody].parentBody);
 
       this.bodies[ibody].drawOrbit(this.G, this.totalMass,
-          this.nOrbitPoints, this.canvasID, this.pixscale);
+          this.nOrbitPoints, this.canvasID, this.pixscale, this.centerX, this.centerY);
     }
-    this.bodies[ibody].draw2D(this.canvasID, this.pixscale);
+    this.bodies[ibody].draw2D(this.canvasID, this.pixscale,
+        this.centerX, this.centerY);
 
     const bodyElementId = 'Body'+(ibody+1);
     document.getElementById(bodyElementId).innerHTML =
@@ -371,6 +375,22 @@ NBodySystem.prototype.zoomAndPan = function zoomAndPan(e) {
   if (e.code == 'KeyO' && this.pixscale >= 50) {
     this.pixscale -=10;
   }
+
+  if (e.code == 'KeyU' && this.centerY < this.canvas.height) {
+    this.centerY += this.canvas.height*0.01;
+  }
+
+  if (e.code == 'KeyD' && this.centerY < 0) {
+    this.centerY -= this.canvas.height*0.01;
+  }
+
+  if (e.code == 'KeyL' && this.centerX < this.canvas.width) {
+    this.centerX += this.canvas.width*0.01;
+  }
+
+  if (e.code == 'KeyR' && this.centerX > 0) {
+    this.centerX-= this.canvas.width*0.01;
+  }
 };
 
 /**
@@ -392,5 +412,5 @@ function testSystem() {
 };
 
 const system = testSystem();
-system.run(1000);
+system.run(300);
 
