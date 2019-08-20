@@ -18,11 +18,14 @@ div
     font-family: helvetica, sans-serif;
 }
 
+.container
+{
+    display:flex;
+}
 .arrowkeys
 {
     height:100px;
     width:100px;
-    display:inline-block;
 }
 
 button{

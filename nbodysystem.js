@@ -342,16 +342,23 @@ function drawSystem() {
         this.centerX, this.centerY);
 
     const bodyElementId = 'Body'+(ibody+1);
-    document.getElementById(bodyElementId).innerHTML =
-      bodyElementId+this.bodies[ibody].printOrbit()+
+
+    const bodyData = bodyElementId+this.bodies[ibody].printOrbit()+
       '<br>'+this.bodies[ibody].printVectors();
+      
+    const bodyElement = document.getElementById(bodyElementId);
+
+    if (bodyElement===null) {
+      const bodyElement = document.createElement("p");
+      bodyElement.setAttribute('id', bodyElementId);
+      document.body.appendChild(bodyElement);
+    }
+      bodyElement.innerHTML = bodyData;
+    
   }
 
   document.getElementById('time').innerHTML =
-  'Time = '+this.time.toPrecision(4).toString() +
-  '<br>Energy= '+this.totalEnergy.toPrecision(4).toString() +
-  '<br> dE = '+this.dE.toPrecision(4).toString()+'%' +
-  '<br> pixscale = '+this.pixscale;
+  'Time = '+this.time.toPrecision(4).toString();
 };
 
 NBodySystem.prototype.run =
