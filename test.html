@@ -12,7 +12,9 @@
             <!-- Latest compiled JavaScript -->
             <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
 
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
+            <link rel="stylesheet" href="test.css">
          
     </head>
     
@@ -20,12 +22,29 @@
     <body>
 
             <div class='jumbotron text-center'>
-                  <h1>N Body dynamics</h1>
+                  <h1>N Body Dynamics</h1>
+                  <p>4th-order Hermite Integration in pure Javascript</p>
             </div>
     
 	<p id="time"> Time </p>
    
-	<canvas id="myCanvas" width = "800" height="600" style='display:block;margin-left:auto; margin-right:auto'>
+      <div>
+      <div class="arrowkeys" id="arrowkeys", style='display:inline-block'>
+            <button class="arrowbutton", id='upButton'style='left:20%', onclick='moveCanvasUp()'><i class="fa fa-arrow-up"></i> </button>
+            <br>
+            <button class="arrowbutton", id='leftButton', style='left:0%', onclick='moveCanvasLeft()'> <i class="fa fa-arrow-left"></i> </button>
+            <button class="arrowbutton", id='rightButton', style='left:0%', onclick='moveCanvasRight()'> <i class="fa fa-arrow-right"></i> </button>
+            <br>
+            <button class="arrowbutton", id='downButton', style='left:20%', onclick='moveCanvasDown()'> <i class="fa fa-arrow-down"></i> </button>
+      </div>
+
+      <div class="arrowkeys" id="zoomkeys", style='display:inline-block'>
+            <button id="plusButton" onclick = 'zoomIn()'><i class="fa fa-plus"></i></button>
+            <br>
+            <button id="minusButton" onclick = 'zoomOut()'><i class="fa fa-minus"></i></button>
+      </div>
+      </div>
+	<canvas id="myCanvas" width = "800" height="600" style='border:10px black; display:block; margin-left:auto; margin-right:auto'>
 	</canvas>
 
       <!--TODO these should be dynamically generated in the javascript-->

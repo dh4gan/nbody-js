@@ -1,7 +1,3 @@
-body {
-
-}
-
 h1,h2,h3{
     color: navy;
     margin-left: 20px;
@@ -22,6 +18,14 @@ div
     font-family: helvetica, sans-serif;
 }
 
+.arrowkeys
+{
+    height:100px;
+    width:100px;
+    display:inline-block;
+}
+
 button{
-    margin-left:10px;
+    margin:3px;
+    position:relative;
 }

@@ -362,6 +362,69 @@ NBodySystem.prototype.run =
       document.onkeypress = this.zoomAndPan.bind(this);
     };
 
+/**
+ * Zooms in/out of the canvas by increasing/decreasing the pixel scales
+ * @param {int} increment - if positive, zooms in, if negative, zooms out
+ */
+NBodySystem.prototype.zoom = function zoom(increment) {
+  this.pixscale +=increment;
+  this.pixscale = this.pixscale >=50 ? this.pixscale : 50;
+};
+
+/**
+ * Increases pixelscale by 10
+ */
+function zoomIn() {
+  system.zoom(10);
+};
+
+/**
+ * Decreases pixelscale by 10
+ */
+function zoomOut() {
+  system.zoom(-10);
+};
+
+
+NBodySystem.prototype.moveX = function moveX(fraction) {
+  this.centerX += this.canvas.width*fraction;
+  this.centerX = this.centerX < this.canvas.width ? this.centerX : this.canvas.width;
+  this.centerX = this.centerX > 0 ? this.centerX : 0;
+};
+
+NBodySystem.prototype.moveY = function moveY(fraction) {
+  this.centerY+= this.canvas.height*fraction;
+  this.centerY = this.centerY < this.canvas.height ? this.centerY : this.canvas.height;
+  this.centerY = this.centerY > 0 ? this.centerY : 0;
+};
+
+/**
+ * moves the center of the canvas right
+ */
+function moveCanvasRight() {
+  system.moveX(+0.01);
+}
+
+/**
+ * moves the center of the canvas left
+ */
+function moveCanvasLeft() {
+  system.moveX(-0.01);
+}
+
+/**
+ * moves the center of the canvas up
+ */
+function moveCanvasUp() {
+  system.moveY(-0.01);
+}
+
+/**
+ * moves the center of the canvas down
+ */
+function moveCanvasDown() {
+  system.moveY(+0.01);
+}
 
 NBodySystem.prototype.zoomAndPan = function zoomAndPan(e) {
   if (e.keyCode == 13) {
@@ -369,27 +432,27 @@ NBodySystem.prototype.zoomAndPan = function zoomAndPan(e) {
   }
 
   if (e.code == 'KeyI') {
-    this.pixscale +=10;
+    this.zoom(10);
   }
 
-  if (e.code == 'KeyO' && this.pixscale >= 50) {
-    this.pixscale -=10;
+  if (e.code == 'KeyO') {
+    this.zoom(-10);
   }
 
-  if (e.code == 'KeyU' && this.centerY < this.canvas.height) {
-    this.centerY += this.canvas.height*0.01;
+  if (e.code == 'KeyU') {
+    this.moveY(0.01);
   }
 
-  if (e.code == 'KeyD' && this.centerY < 0) {
-    this.centerY -= this.canvas.height*0.01;
+  if (e.code == 'KeyD') {
+    this.moveY(-0.01);
   }
 
-  if (e.code == 'KeyL' && this.centerX < this.canvas.width) {
-    this.centerX += this.canvas.width*0.01;
+  if (e.code == 'KeyL') {
+    this.moveX(0.01);
   }
 
-  if (e.code == 'KeyR' && this.centerX > 0) {
-    this.centerX-= this.canvas.width*0.01;
+  if (e.code == 'KeyR') {
+    this.moveX(-0.01);
   }
 };
 
