@@ -439,7 +439,7 @@ Body.prototype.drawOrbit = function drawOrbit(G, totalmass,
     const minoraxis = this.a*Math.sqrt((1.0-this.e*this.e));
     const focusDistance = Math.sqrt(this.a*this.a - minoraxis*minoraxis);
 
-    let focusX = centerX  -
+    let focusX = centerX -
     focusDistance*pixscale*Math.cos(2.0*Math.PI - this.argper);
 
     let focusY = centerY -
@@ -460,8 +460,8 @@ Body.prototype.drawOrbit = function drawOrbit(G, totalmass,
   } else {
     // If orbit open, use the multiple point draw
     const dphi = 2.0 * Math.PI / npoints;
-    //let centerX = canvas.width / 2;
-    //let centerY = canvas.height / 2;
+    // let centerX = canvas.width / 2;
+    // let centerY = canvas.height / 2;
 
     if (this.parentBody) {
       centerX +=this.parentBody.position.x * pixscale;
