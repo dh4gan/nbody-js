@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* vector.js
  *  Written 05-March-2018 by dh4gan
  *
@@ -336,7 +337,8 @@ function drawSystem() {
           this.bodies[ibody].parentBody);
 
       this.bodies[ibody].drawOrbit(this.G, this.totalMass,
-          this.nOrbitPoints, this.canvasID, this.pixscale, this.centerX, this.centerY);
+          this.nOrbitPoints, this.canvasID, this.pixscale,
+          this.centerX, this.centerY);
     }
     this.bodies[ibody].draw2D(this.canvasID, this.pixscale,
         this.centerX, this.centerY);
@@ -345,16 +347,14 @@ function drawSystem() {
 
     const bodyData = bodyElementId+this.bodies[ibody].printOrbit()+
       '<br>'+this.bodies[ibody].printVectors();
-      
-    const bodyElement = document.getElementById(bodyElementId);
 
-    if (bodyElement===null) {
-      const bodyElement = document.createElement("p");
+    if (document.getElementById(bodyElementId) === null) {
+      const bodyElement = document.createElement('p');
       bodyElement.setAttribute('id', bodyElementId);
       document.body.appendChild(bodyElement);
     }
-      bodyElement.innerHTML = bodyData;
-    
+    const bodyElement = document.getElementById(bodyElementId);
+    bodyElement.innerHTML = bodyData;
   }
 
   document.getElementById('time').innerHTML =
@@ -482,5 +482,5 @@ function testSystem() {
 };
 
 const system = testSystem();
-system.run(300);
+system.run(30);
 
