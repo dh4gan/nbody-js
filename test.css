@@ -22,6 +22,20 @@ div
 {
     display:flex;
 }
+
+.scrollable-canvas-container
+{
+    width: 90%;
+    height: 100%;
+    overflow:auto;
+    border: 2px solid grey;
+}   
+
+.canvas 
+{
+    display: block;
+}
+
 .arrowkeys
 {
     height:200px;

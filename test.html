@@ -28,47 +28,56 @@
       </div>
 
       <div class='container'>
-            
-            <div style='display:inline-block; width:1000pix'>
-            <p id="time"> Time </p>
-            </div>
-            
-                  <canvas id="myCanvas" , width="800" , height="600" , style='border:2px solid black;'></canvas>
 
-                  <div style='text-align:center; display: inline-block'>
-                        <div class="arrowkeys" id="arrowkeys" , style='display:inline-block'>
-                              <button class="btn btn-primary-outline"> <i class = "fa fa-blank"></i></button>
-                              <button class="btn btn-primary" , id='upButton' onclick='moveCanvasUp()'>
-                                    <i class="fa fa-arrow-up"></i> 
-                              </button>
-                              <button class="btn btn-primary-outline"> <i class = "fa fa-blank"></i></button>
-                              <br>
-                              <button class="btn btn-primary" , id='leftButton' onclick='moveCanvasLeft()'> <i
-                                          class="fa fa-arrow-left"></i> </button>
-                                          <button class="btn btn-primary-outline"> <i class = "fa fa-blank"></i></button>
-                              <button class="btn btn-primary" , id='rightButton' onclick='moveCanvasRight()'>
-                                    <i class="fa fa-arrow-right"></i> </button>
-                              <br>
-                              <button class="btn btn-primary-outline"> <i class = "fa fa-blank"></i></button>
-                              <button class="btn btn-primary" , id='downButton' onclick='moveCanvasDown()'>
-                                    <i class="fa fa-arrow-down"></i> </button>
-                                    <button class="btn btn-primary-outline"> <i class = "fa fa-blank"></i></button>
-                        </div>
-                  
-      
-                        <div class="arrowkeys" id="zoomkeys" , style='display:inline-block'>
-                              <button class = "btn btn-primary" id="plusButton" onclick='zoomIn()'><i class="fa fa-plus"></i></button>
-                              <br>
-                              <button class = "btn btn-primary" id="minusButton" onclick='zoomOut()'><i class="fa fa-minus"></i></button>
-                        </div>
+            <!-- Time indicator -->
+            <div style='display:inline-block;'>
+                  <p id="time"> Time </p>
+            </div>
+
+            <!-- Canvas -->
+            <div class="scrollable-canvas-container">
+                  <canvas id="myCanvas" , width="1200" , height="800"></canvas>
+            </div>
+
+            
+            <div style='text-align:center; display: inline-block'>
+
+                  <!-- Scroll buttons-->
+                  <div class="arrowkeys" id="arrowkeys" , style='display:inline-block'>
+                        <button class="btn btn-primary-outline"> <i class="fa fa-blank"></i></button>
+                        <button class="btn btn-primary" , id='upButton' onclick='moveCanvasUp()'>
+                              <i class="fa fa-arrow-up"></i>
+                        </button>
+                        <button class="btn btn-primary-outline"> <i class="fa fa-blank"></i></button>
+                        <br>
+                        <button class="btn btn-primary" , id='leftButton' onclick='moveCanvasLeft()'> <i
+                                    class="fa fa-arrow-left"></i> </button>
+                        <button class="btn btn-primary-outline"> <i class="fa fa-blank"></i></button>
+                        <button class="btn btn-primary" , id='rightButton' onclick='moveCanvasRight()'>
+                              <i class="fa fa-arrow-right"></i> </button>
+                        <br>
+                        <button class="btn btn-primary-outline"> <i class="fa fa-blank"></i></button>
+                        <button class="btn btn-primary" , id='downButton' onclick='moveCanvasDown()'>
+                              <i class="fa fa-arrow-down"></i> </button>
+                        <button class="btn btn-primary-outline"> <i class="fa fa-blank"></i></button>
                   </div>
+
+                  <!-- Zoom buttons-->
+                  <div class="arrowkeys" id="zoomkeys" , style='display:inline-block'>
+                        <button class="btn btn-primary" id="plusButton" onclick='zoomIn()'><i
+                                    class="fa fa-plus"></i></button>
+                        <br>
+                        <button class="btn btn-primary" id="minusButton" onclick='zoomOut()'><i
+                                    class="fa fa-minus"></i></button>
+                  </div>
+            </div>
 
 
       </div>
 
       <!--Javascript generates entries for each body being simulated here-->
       <!---->
-      <!--Javascript stuff -->
+      <!--Javascript sources -->
 
       <script src='vector.js'></script>
       <script src='body.js'> </script>
