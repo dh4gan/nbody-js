@@ -464,6 +464,25 @@ NBodySystem.prototype.zoomAndPan = function zoomAndPan(e) {
 };
 
 /**
+ * Saves the nBodySystem object to file
+ * @param filename - the file prefix to be saved
+ */
+NBodySystem.prototype.saveSystem = function saveSystem(filename='system') {
+  const saveString = JSON.stringify(this);
+  const blob = new Blob([saveString], {type: 'text/plain'});
+
+  saveAs(blob, filename+'.json');
+};
+
+/**
+ * Drives the save button functionality
+ */
+function save() {
+  system.saveSystem();
+}
+
+
+/**
  * Quick method to setup a test NBodySystem
  * @return {nBodySystem}
  */
